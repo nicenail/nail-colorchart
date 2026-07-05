@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="ja" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.anthropic.com https://fonts.googleapis.com https://fonts.gstatic.com https://xsccgzmaoxgaauiwqobt.supabase.co; connect-src *; img-src * data: blob:;">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>NICENAIL カラー管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --bg: #FAFAF8;
+  --card: #FFFFFF;
+  --border: #EBEBEB;
+  --text: #1C1C1C;
+  --text2: #6B6B6B;
+  --text3: #ADADAD;
+  --accent: #C4956A;
+  --accent-light: #F5EDE4;
+  --disc: #D94F4F;
+  --disc-light: #FDEAEA;
+  --new: #3A9E6B;
+  --new-light: #E8F7EF;
+  --r: 10px;
+  --nav-h: 56px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: calc(var(--nav-h) + 16px); }
+
+/* NAV */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: var(--nav-h);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; cursor: pointer; border: none; background: none;
+  font-size: 10px; font-family: inherit; color: var(--text3);
+  padding: 6px 0;
+  transition: color 0.15s;
+}
+.nav-item.active { color: var(--accent); }
+.nav-item svg { width: 22px; height: 22px; stroke-width: 1.8; }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; }
+
+/* HEADER */
+.page-header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 12px;
+}
+.page-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+.page-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* STATS BAR */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.stat { padding: 10px 0; text-align: center; }
+.stat-n { font-size: 20px; font-weight: 700; line-height: 1; }
+.stat-l { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 0.05em; }
+
+/* SEARCH + FILTER */
+.search-area { padding: 12px 16px 6px; background: var(--bg); }
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 50px; padding: 8px 14px;
+}
+.search-box svg { width: 15px; height: 15px; color: var(--text3); flex-shrink: 0; }
+.search-box input {
+  flex: 1; border: none; outline: none; font-size: 13px;
+  font-family: inherit; color: var(--text); background: transparent;
+}
+.filter-row {
+  display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 4px;
+  scrollbar-width: none;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0; padding: 5px 13px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  border: 1px solid var(--border); cursor: pointer;
+  background: var(--card); color: var(--text2);
+  white-space: nowrap; transition: all 0.12s;
+}
+.chip.on { background: var(--text); color: white; border-color: var(--text); }
+.chip.disc-filter.on { background: var(--disc); border-color: var(--disc); }
+.chip.new-filter.on { background: var(--new); border-color: var(--new); }
+
+/* COLOR LIST */
+.color-list { padding: 8px 16px; display: flex; flex-direction: column; gap: 8px; }
+.color-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px;
+  display: flex; gap: 12px; align-items: flex-start;
+  cursor: pointer; transition: box-shadow 0.12s;
+  position: relative;
+}
+.color-card:active { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.color-card.is-disc { border-color: #F5C8C8; background: #FFFAFA; }
+.color-card.is-new { border-color: #B8E0CC; background: #F8FDF9; }
+.nail-chip {
+  width: 44px; height: 58px; flex-shrink: 0;
+  border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.card-info { flex: 1; min-width: 0; }
+.card-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.card-num { font-size: 14px; font-weight: 700; }
+.card-tex {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  background: var(--bg); color: var(--text2); border: 1px solid var(--border);
+}
+.card-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.card-stars { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.card-cure {
+  font-size: 10px; margin-top: 3px;
+  display: flex; align-items: center; gap: 4px; color: var(--text3);
+}
+.status-badge {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px; color: white;
+}
+.status-badge.disc { background: var(--disc); }
+.status-badge.new { background: var(--new); }
+
+/* DETAIL SHEET */
+.sheet-bg {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.4);
+  align-items: flex-end;
+}
+.sheet-bg.open { display: flex; }
+.sheet {
+  width: 100%; max-height: 88vh; overflow-y: auto;
+  background: var(--card); border-radius: 18px 18px 0 0;
+  animation: up 0.24s ease;
+}
+@keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-drag { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
+.sheet-hero {
+  height: 180px; display: flex; align-items: center; justify-content: center;
+  position: relative; margin: 12px 16px 0; border-radius: 12px; overflow: hidden;
+}
+.sheet-nail {
+  width: 70px; height: 92px;
+  border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.sheet-body { padding: 16px 20px; }
+.sheet-num { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.sheet-tex { font-size: 13px; color: var(--text3); margin-top: 2px; margin-bottom: 10px; }
+.sheet-desc { font-size: 14px; color: var(--text2); line-height: 1.75; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+.detail-cell { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+.detail-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; letter-spacing: 0.06em; }
+.detail-val { font-size: 13px; font-weight: 500; }
+.sheet-actions { display: flex; gap: 8px; margin: 4px 0 8px; }
+.sheet-actions button {
+  flex: 1; padding: 12px; border-radius: 10px;
+  font-size: 13px; font-weight: 500; font-family: inherit;
+  border: 1px solid var(--border); cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-disc { background: var(--disc-light); color: var(--disc); border-color: #F5C8C8; }
+.btn-disc:active { background: var(--disc); color: white; }
+.btn-restore { background: var(--new-light); color: var(--new); border-color: #B8E0CC; }
+.btn-restore:active { background: var(--new); color: white; }
+.btn-delete { background: #FFF5F5; color: #B83232; border-color: #F5C8C8; }
+.btn-delete:active { background: #B83232; color: white; }
+.btn-active { background: var(--bg); color: var(--text2); }
+.sheet-close {
+  display: block; width: calc(100% - 0px); margin: 0 0 16px;
+  padding: 13px; background: var(--bg); color: var(--text2);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: 14px; font-family: inherit; cursor: pointer;
+}
+
+/* PHOTO PAGE */
+.photo-page { padding: 16px; }
+.photo-upload-card {
+  border: 2px dashed var(--border); border-radius: var(--r);
+  background: var(--card); padding: 32px 20px; text-align: center;
+}
+.photo-upload-card p { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.photo-upload-card input { display: none; }
+.upload-label {
+  display: inline-block; margin-top: 14px;
+  padding: 10px 24px; background: var(--text); color: white;
+  border-radius: 50px; font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.photo-container {
+  display: none; border-radius: var(--r); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.photo-container img { width: 100%; display: block; }
+.photo-hint {
+  padding: 10px 14px; background: var(--card);
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text3); text-align: center;
+}
+.photo-reupload {
+  display: none; margin-top: 12px; text-align: center;
+}
+.photo-reupload label {
+  font-size: 12px; color: var(--text2);
+  border: 1px solid var(--border); border-radius: 50px;
+  padding: 7px 18px; cursor: pointer; background: var(--card);
+}
+
+/* MANAGE PAGE */
+.manage-page { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.section-title {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: -4px;
+}
+.manage-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+}
+.manage-card-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.manage-card-header h3 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.manage-card-header p { font-size: 12px; color: var(--text2); }
+.manage-card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.form-row { display: flex; gap: 8px; }
+.form-field { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 11px; color: var(--text2); font-weight: 500; }
+.form-input {
+  padding: 9px 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 13px; font-family: inherit;
+  background: var(--bg); color: var(--text); outline: none;
+  width: 100%;
+}
+.form-input:focus { border-color: var(--accent); background: white; }
+.form-input[type=color] { padding: 3px; height: 38px; cursor: pointer; }
+.form-select {
+  padding: 9px 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 13px; font-family: inherit;
+  background: var(--bg); color: var(--text); outline: none;
+  width: 100%; appearance: none;
+}
+.submit-btn {
+  padding: 12px; background: var(--text); color: white;
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 500;
+  font-family: inherit; cursor: pointer; width: 100%;
+}
+.submit-btn:active { opacity: 0.8; }
+.submit-btn.danger { background: var(--disc); }
+
+/* DISC/NEW LISTS in manage */
+.mini-list { max-height: 240px; overflow-y: auto; }
+.mini-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.mini-item:last-child { border-bottom: none; }
+.mini-swatch {
+  width: 32px; height: 42px; flex-shrink: 0;
+  border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.mini-info { flex: 1; min-width: 0; }
+.mini-num { font-size: 13px; font-weight: 600; }
+.mini-desc { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-action button {
+  padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 500;
+  font-family: inherit; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text2); cursor: pointer;
+}
+.empty-mini { padding: 20px; text-align: center; color: var(--text3); font-size: 12px; }
+
+/* FIND PAGE */
+.result-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px;
+  display: flex; gap: 12px; align-items: center;
+  cursor: pointer; transition: box-shadow 0.12s;
+}
+.result-card:active { box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+.result-rank {
+  font-size: 18px; font-weight: 700; color: var(--accent);
+  width: 24px; text-align: center; flex-shrink: 0;
+}
+.result-nail {
+  width: 44px; height: 58px; flex-shrink: 0;
+  border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.result-info { flex: 1; min-width: 0; }
+.result-num { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.result-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.result-diff {
+  font-size: 10px; margin-top: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.diff-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.diff-bar { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.3s; }
+
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:12px;align-items:center;cursor:pointer;}
+.result-rank{font-size:18px;font-weight:700;color:var(--accent);width:24px;text-align:center;flex-shrink:0;}
+.result-nail{width:44px;height:58px;flex-shrink:0;border-radius:48% 48% 42% 42%/55% 55% 45% 45%;border:1px solid rgba(0,0,0,0.06);}
+.result-info{flex:1;min-width:0;}
+.result-num{font-size:14px;font-weight:700;margin-bottom:2px;}
+.result-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+.result-diff{font-size:10px;margin-top:4px;display:flex;align-items:center;gap:6px;}
+.diff-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.diff-bar{height:100%;border-radius:2px;background:var(--accent);}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:white;font-size:14px;}
+.loading-overlay.show{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1C1C1C;color:white;padding:10px 20px;border-radius:50px;font-size:13px;z-index:600;opacity:0;transition:opacity 0.3s;}
+.toast.show{opacity:1;}
+
+
+/* ===== アニメーション ===== */
+
+/* ホロ: ✦✧ キラキラ */
+.nail-chip-wrap { position: relative; display: inline-block; width: 44px; height: 58px; flex-shrink: 0; }
+.nail-chip-wrap .nail-chip { position: absolute; inset: 0; width: 100%; height: 100%; }
+.kira-star {
+  position: absolute; pointer-events: none;
+  animation: kira-fade 1.4s ease-in-out infinite;
+  font-size: 10px; line-height: 1;
+}
+@keyframes kira-fade {
+  0%   { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  30%  { opacity: 1; transform: scale(1.2) rotate(20deg); }
+  70%  { opacity: 1; transform: scale(1.0) rotate(-10deg); }
+  100% { opacity: 0; transform: scale(0.5) rotate(30deg); }
+}
+
+/* シアー系: 透明感グラデーション */
+.sheer-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,0.70) 0%,
+    rgba(255,255,255,0.25) 30%,
+    rgba(255,255,255,0.0)  55%,
+    rgba(255,255,255,0.12) 100%
+  );
+  box-shadow:
+    inset 2px 3px 8px rgba(255,255,255,0.6),
+    inset -1px -2px 6px rgba(0,0,0,0.08);
+}
+/* グリッター/ラメ: ✦ キラキラ */
+.glitter-spark {
+  position: absolute; pointer-events: none;
+  font-size: 11px; line-height: 1;
+  animation: glitter-blink 1.6s ease-in-out infinite;
+}
+@keyframes glitter-blink {
+  0%,100% { opacity: 0; transform: scale(0.6); }
+  40%      { opacity: 1; transform: scale(1.2); }
+  70%      { opacity: 0.7; transform: scale(1.0); }
+}
+  20%  { opacity: 1; transform: scale(1.4) rotate(10deg); }
+  50%  { opacity: 0.8; transform: scale(1.0) rotate(0deg); }
+  80%  { opacity: 0.3; transform: scale(0.8) rotate(20deg); }
+  100% { opacity: 0; transform: scale(0) rotate(45deg); }
+}
+/* L系ラメの凹凸テクスチャーオーバーレイ */
+.lame-texture {
+  position: absolute; inset: 0; pointer-events: none;
+  border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
+  overflow: hidden;
+  background-image: url('data:image/jpeg;base64,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');
+  background-size: cover;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+  100% { background-position: 80px 80px; }
+}
+
+/* パール: 光沢シマーエフェクト */
+.pearl-shine {
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
+}
+.pearl-shine::before {
+  content: '';
+  position: absolute;
+  top: -60%; left: -60%;
+  width: 50%; height: 200%;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.7) 50%, transparent 70%);
+  animation: pearl-shimmer 2.2s ease-in-out infinite;
+  transform: rotate(25deg);
+}
+@keyframes pearl-shimmer {
+  0%   { left: -80%; opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { opacity: 0.8; }
+  100% { left: 130%; opacity: 0; }
+}
+.notranslate { unicode-bidi: plaintext; }
+
+
+/* ===== パスワード画面 ===== */
+#pw-screen {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+#pw-screen.hidden { display: none; }
+.pw-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px 24px;
+  width: 90%; max-width: 340px; text-align: center;
+}
+.pw-logo { font-size: 32px; margin-bottom: 12px; }
+.pw-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.pw-sub { font-size: 12px; color: var(--text3); margin-bottom: 24px; }
+.pw-tabs {
+  display: flex; background: var(--bg); border-radius: 10px;
+  padding: 4px; gap: 4px; margin-bottom: 20px;
+}
+.pw-tab {
+  flex: 1; padding: 8px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 500; font-family: inherit;
+  background: transparent; color: var(--text3); cursor: pointer;
+  transition: all 0.15s;
+}
+.pw-tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.pw-input {
+  width: 100%; padding: 12px 14px; margin-bottom: 12px;
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: 15px; font-family: inherit; text-align: center;
+  letter-spacing: 0.1em; outline: none; background: var(--bg);
+  color: var(--text);
+}
+.pw-input:focus { border-color: var(--accent); }
+.pw-btn {
+  width: 100%; padding: 13px;
+  background: var(--text); color: white; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 500;
+  font-family: inherit; cursor: pointer; transition: opacity 0.15s;
+}
+.pw-btn:active { opacity: 0.8; }
+.pw-btn.viewer { background: var(--bg); color: var(--text2); border: 1px solid var(--border); margin-top: 8px; }
+.pw-error { color: var(--disc); font-size: 12px; margin-top: 8px; display: none; }
+.admin-badge {
+  position: fixed; top: 14px; right: 16px; z-index: 60;
+  font-size: 11px; padding: 3px 10px; border-radius: 20px;
+  background: var(--accent); color: white; font-weight: 500;
+  display: none;
+}
+.admin-badge.show { display: block; }
+
+</style>
+</head>
+<body>
+
+<!-- パスワード画面 -->
+<div id="pw-screen">
+  <div class="pw-card">
+    <div class="pw-logo">💅</div>
+    <div class="pw-title">NICENAIL カラー管理</div>
+    <div class="pw-sub">閲覧または管理画面を選択してください</div>
+    <div class="pw-tabs">
+      <button class="pw-tab active" id="pw-tab-view" onclick="pwSwitchTab('view')">閲覧</button>
+      <button class="pw-tab" id="pw-tab-admin" onclick="pwSwitchTab('admin')">管理</button>
+    </div>
+    <div id="pw-admin-section" style="display:none">
+      <input class="pw-input" type="password" id="pw-input" placeholder="パスワードを入力"
+        onkeydown="if(event.key==='Enter')pwLogin()">
+      <div class="pw-error" id="pw-error">パスワードが違います</div>
+    </div>
+    <button class="pw-btn" id="pw-enter-btn" onclick="pwEnter()">入る</button>
+  </div>
+</div>
+<div class="admin-badge" id="admin-badge">管理モード</div>
+
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div><div id="loading-msg">データを読み込み中...</div></div>
+<div class="toast" id="toast"></div>
+<div class="page active" id="page-list">
+  <div class="page-header"><div class="page-title">カラージェル</div><div class="page-sub" id="list-sub">読み込み中...</div></div>
+  <div class="stats-bar" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat"><div class="stat-n" id="s-total">—</div><div class="stat-l">カラー数</div></div>
+    <div class="stat"><div class="stat-n" id="s-lame">—</div><div class="stat-l">ラメ数</div></div>
+    <div class="stat"><div class="stat-n" id="s-disc" style="color:var(--disc)">—</div><div class="stat-l">廃番</div></div>
+    <div class="stat"><div class="stat-n" id="s-new" style="color:var(--new)">—</div><div class="stat-l">新色</div></div>
+  </div>
+  <div class="search-area">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search" placeholder="番号・色名・素材で検索...">
+    </div>
+  </div>
+  <div style="padding:6px 16px 0;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.08em">カテゴリ</div>
+  <div class="filter-row" id="filter-row"></div>
+  <div class="color-list" id="color-list"></div>
+</div>
+<!-- ===== PHOTO PAGE ===== -->
+<div class="page" id="page-photo">
+  <div class="page-header">
+    <div class="page-title">カラーチャート</div>
+    <div class="page-sub">カラーチャートを確認</div>
+  </div>
+  <div class="photo-page">
+    <div class="photo-upload-card" id="photo-upload-card">
+      <p>カラーチャートの写真を<br>アップロードしてください</p>
+      <input type="file" accept="image/*" id="photo-input" onchange="loadPhoto(event)">
+      <label class="upload-label" for="photo-input">写真を選ぶ</label>
+    </div>
+    <div class="photo-container" id="photo-container">
+      <img id="photo-img" src="" alt="カラーチャート">
+      <div class="photo-hint">ピンチアウトで拡大できます</div>
+    </div>
+    <div class="photo-reupload" id="photo-reupload">
+      <input type="file" accept="image/*" id="photo-input2" onchange="loadPhoto(event)">
+      <label for="photo-input2">📷 写真を変更する</label>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FIND PAGE ===== -->
+<div class="page" id="page-find">
+  <div class="page-header">
+    <div class="page-title">カラー検索</div>
+    <div class="page-sub">番号検索・写真から色を探す</div>
+  </div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+
+    <!-- アップロードエリア -->
+    <div id="find-upload-area" style="border:2px dashed var(--border);border-radius:var(--r);background:var(--card);padding:28px 20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">🎨</div>
+      <p style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">お客様の写真をアップロード</p>
+      <p style="font-size:12px;color:var(--text2);line-height:1.7">イメージ写真・参考ネイル画像などから<br>近い色を自動で探します</p>
+      <input type="file" accept="image/*" id="find-input" style="display:none" onchange="findColors(event)">
+      <label for="find-input" style="display:inline-block;margin-top:14px;padding:10px 28px;background:var(--text);color:white;border-radius:50px;font-size:13px;font-weight:500;cursor:pointer">写真を選ぶ</label>
+    </div>
+
+    <!-- プレビュー（アップ後） -->
+    <div id="find-preview-wrap" style="display:none">
+      <div style="position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)">
+        <img id="find-preview-img" style="width:100%;display:block;max-height:260px;object-fit:cover">
+        <canvas id="find-canvas" style="display:none"></canvas>
+        <!-- タップで色指定するオーバーレイ -->
+        <div id="find-tap-hint" style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:white;font-size:11px;padding:8px;text-align:center">
+          📍 写真の色を確認したい部分をタップ
+        </div>
+        <div id="find-cursor" style="display:none;position:absolute;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);transform:translate(-50%,-50%);pointer-events:none"></div>
+      </div>
+      <label for="find-input" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:var(--text3);cursor:pointer">別の写真に変更</label>
+    </div>
+
+    <!-- サンプル色カード（タップした色） -->
+    <div id="find-sample-wrap" style="display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.1em;margin-bottom:8px">選択した色</div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px">
+        <div id="find-sample-swatch" style="width:52px;height:68px;border-radius:48% 48% 42% 42%/55% 55% 45% 45%;border:1px solid rgba(0,0,0,0.08);flex-shrink:0"></div>
+        <div>
+          <div id="find-sample-hex" style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px"></div>
+          <div style="font-size:11px;color:var(--text3)">写真からサンプリングした色</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 結果 -->
+    <div id="find-results" style="display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.1em;margin-bottom:8px">近い色（最大3色）</div>
+      <div id="find-result-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <!-- 説明（初期） -->
+    <!-- 使い方 -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">使い方</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.9">
+        <b>① 番号で検索</b><br>
+        番号を入力するとカラー詳細を表示<br>
+        <b>② 写真から色を探す</b><br>
+        写真をアップロードして気になる色をタップ<br>→ 近いカラーを最大3色提案
+      </div>
+    </div>
+
+    <!-- 番号検索 -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border)">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">🔢 番号で検索</div>
+        <div style="font-size:12px;color:var(--text2)">番号を入力するとカラー詳細を表示します</div>
+      </div>
+      <div style="padding:12px 16px;display:flex;gap:8px">
+        <input type="text" id="find-num-input" placeholder="例: 21, L17, FL1"
+          inputmode="text"
+          style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);outline:none"
+          oninput="findByNumber(this.value)">
+      </div>
+      <div id="find-num-result" style="display:none;border-top:1px solid var(--border)"></div>
+    </div>
+
+    </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="page" id="page-find">
+  <div class="page-header"><div class="page-title">カラー検索</div><div class="page-sub">番号検索・写真から色を探す</div></div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div id="find-upload-area" style="border:2px dashed var(--border);border-radius:var(--r);background:var(--card);padding:28px 20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">🎨</div>
+      <p style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">お客様の写真をアップロード</p>
+      <p style="font-size:12px;color:var(--text2);line-height:1.7">イメージ写真・参考ネイル画像などから<br>近い色を自動で探します</p>
+      <input type="file" accept="image/*" id="find-input" style="display:none" onchange="findColors(event)">
+      <label for="find-input" style="display:inline-block;margin-top:14px;padding:10px 28px;background:var(--text);color:white;border-radius:50px;font-size:13px;font-weight:500;cursor:pointer">写真を選ぶ</label>
+    </div>
+    <div id="find-preview-wrap" style="display:none">
+      <div style="position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)">
+        <img id="find-preview-img" style="width:100%;display:block;max-height:260px;object-fit:cover">
+        <canvas id="find-canvas" style="display:none"></canvas>
+        <div id="find-tap-hint" style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:white;font-size:11px;padding:8px;text-align:center">📍 写真の色を確認したい部分をタップ</div>
+        <div id="find-cursor" style="display:none"></div>
+      </div>
+      <label for="find-input" style="display:block;margin-top:8px;text-align:center;font-size:12px;color:var(--text3);cursor:pointer">別の写真に変更</label>
+    </div>
+    <div id="find-sample-wrap" style="display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.1em;margin-bottom:8px">選択した色</div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px">
+        <div id="find-sample-swatch" style="width:52px;height:68px;border-radius:48% 48% 42% 42%/55% 55% 45% 45%;border:1px solid rgba(0,0,0,0.08);flex-shrink:0"></div>
+        <div><div id="find-sample-hex" style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px"></div>
+        <div style="font-size:11px;color:var(--text3)">写真からサンプリングした色</div></div>
+      </div>
+    </div>
+    <div id="find-results" style="display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.1em;margin-bottom:8px">近い色（最大3色）</div>
+      <div id="find-result-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+  </div>
+</div>
+<!-- ===== MANAGE PAGE ===== -->
+<div class="page" id="page-manage">
+  <div class="page-header">
+    <div class="page-title">管理</div>
+    <div class="page-sub">廃番・新色の登録</div>
+  </div>
+  <div class="manage-page">
+
+    <!-- 廃番リスト -->
+    <div class="section-title">廃番中のカラー</div>
+    <div class="manage-card">
+      <div class="mini-list" id="disc-list"></div>
+    </div>
+
+    <!-- 新色リスト -->
+    <div class="section-title">新色</div>
+    <div class="manage-card">
+      <div class="mini-list" id="new-list"></div>
+    </div>
+
+    <!-- カラー編集 -->
+    <div class="section-title">カラーを編集</div>
+    <div class="manage-card">
+      <div class="manage-card-body">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">番号で検索</label>
+            <input class="form-input" type="text" id="edit-search" placeholder="例: 21" inputmode="text" oninput="editSearch()">
+          </div>
+        </div>
+        <div id="edit-result" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);margin-top:4px">
+            <div id="edit-swatch" style="width:40px;height:52px;border-radius:48% 48% 42% 42%/55% 55% 45% 45%;border:1px solid rgba(0,0,0,0.08);flex-shrink:0"></div>
+            <div id="edit-label" style="font-size:14px;font-weight:600"></div>
+          </div>
+          <div class="form-field" style="margin-bottom:8px">
+            <label class="form-label">特徴・メモ</label>
+            <input class="form-input" type="text" id="edit-desc" placeholder="特徴・メモ">
+          </div>
+          <div class="form-row" style="margin-bottom:8px">
+            <div class="form-field">
+              <label class="form-label">素材</label>
+              <select class="form-select" id="edit-tex">
+                <option>マット</option><option>シアー</option><option>パール</option>
+                <option>グリッター</option><option>シアー/グリッター</option>
+                <option>パール/グリッター</option><option>マット/シアー</option>
+                <option>シアー/パール</option><option>グリッターラメ</option>
+                <option>フラッシュラメ</option>
+              </select>
+            </div>
+            <div class="form-field" style="flex:0 0 60px">
+              <label class="form-label">色</label>
+              <input class="form-input" type="color" id="edit-color">
+            </div>
+          </div>
+          <div class="form-row" style="margin-bottom:10px">
+            <div class="form-field">
+              <label class="form-label">テクスチャー</label>
+              <select class="form-select" id="edit-stars">
+                <option value="1">★☆☆☆ やわらかい</option>
+                <option value="2">★★☆☆ 中間</option>
+                <option value="3">★★★☆ 硬い</option>
+                <option value="4">★★★★ 最も硬い</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">硬化リスク</label>
+              <select class="form-select" id="edit-cure">
+                <option>◎</option><option>〇</option><option>△</option><option>×</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field" style="margin-bottom:10px">
+            <label class="form-label">2度塗り推奨</label>
+            <select class="form-select" id="edit-double">
+              <option value="0">なし</option>
+              <option value="1">推奨</option>
+            </select>
+          </div>
+          <div class="form-field" style="margin-bottom:10px">
+            <label class="form-label">💡 こんな方に（ヒント）</label>
+            <input class="form-input" type="text" id="edit-hint" placeholder="例: ナチュラル志向・初めての方に">
+          </div>
+          <div class="form-field" style="margin-bottom:10px">
+            <label class="form-label">カテゴリ（系統）</label>
+            <select class="form-select" id="edit-category">
+              <option value="">自動判定</option>
+              <option>ピンク系</option>
+              <option>レッド/オレンジ</option>
+              <option>イエロー/グリーン</option>
+              <option>ブルー/パープル</option>
+              <option>ベージュ/ホワイト</option>
+              <option>グレー/ブラック</option>
+              <option>グリッター/ラメ</option>
+            </select>
+          </div>
+          <button class="submit-btn" onclick="saveEdit()" style="background:var(--accent)">変更を保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 廃番登録 -->
+    <div class="section-title">廃番・廃番予定の登録</div>
+    <div class="manage-card">
+      <div class="manage-card-body">
+        <div class="form-row">
+          <div class="form-field" style="flex:0 0 90px">
+            <label class="form-label">番号</label>
+            <input class="form-input" type="text" id="disc-num" placeholder="例: 21" inputmode="text">
+          </div>
+          <div class="form-field">
+            <label class="form-label">廃番予定月（空欄＝即廃番）</label>
+            <input class="form-input" type="month" id="disc-sched">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="submit-btn danger" onclick="markDisc()" style="flex:1">廃番にする／予定登録</button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">予定月を入れると「廃番予定」として登録。空欄なら今すぐ廃番</div>
+      </div>
+    </div>
+
+    <!-- 廃番予定リスト -->
+    <div class="section-title">廃番予定</div>
+    <div class="manage-card">
+      <div class="mini-list" id="sched-list"></div>
+    </div>
+
+    <!-- 月別廃番フィルター -->
+    <div class="section-title">廃番済み（月別）</div>
+    <div class="manage-card">
+      <div class="manage-card-body" style="padding-bottom:0">
+        <div class="form-row" style="margin-bottom:10px">
+          <div class="form-field">
+            <label class="form-label">月を選択</label>
+            <select class="form-select" id="disc-month-filter" onchange="renderDiscByMonth()">
+              <option value="">すべて</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="mini-list" id="disc-list"></div>
+    </div>
+
+    <!-- 新色登録 -->
+    <div class="section-title">新色を追加</div>
+    <div class="manage-card">
+      <div class="manage-card-body">
+        <div class="form-row">
+          <div class="form-field" style="flex:0 0 90px">
+            <label class="form-label">番号</label>
+            <input class="form-input" type="text" id="new-num" placeholder="例: 140" inputmode="text">
+          </div>
+          <div class="form-field" style="flex:0 0 56px">
+            <label class="form-label">色</label>
+            <input class="form-input" type="color" id="new-color" value="#F9D0D8">
+          </div>
+          <div class="form-field">
+            <label class="form-label">素材</label>
+            <select class="form-select" id="new-tex">
+              <option>マット</option><option>シアー</option><option>パール</option>
+              <option>グリッター</option><option>シアー/グリッター</option>
+              <option>パール/グリッター</option><option>グリッターラメ</option>
+              <option>フラッシュラメ</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">特徴・メモ</label>
+          <input class="form-input" type="text" id="new-desc" placeholder="例: くすみピンク・グラデ向き">
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">テクスチャー</label>
+            <select class="form-select" id="new-stars">
+              <option value="1">★☆☆☆ やわらかい</option>
+              <option value="2" selected>★★☆☆ 中間</option>
+              <option value="3">★★★☆ 硬い</option>
+              <option value="4">★★★★ 最も硬い</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">2度塗り推奨</label>
+            <select class="form-select" id="new-double">
+              <option value="0">なし</option>
+              <option value="1">推奨</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:10px">
+          <label class="form-label">カテゴリ（系統）</label>
+          <select class="form-select" id="new-category">
+            <option value="">自動判定</option>
+            <option>ピンク系</option>
+            <option>レッド/オレンジ</option>
+            <option>イエロー/グリーン</option>
+            <option>ブルー/パープル</option>
+            <option>ベージュ/ホワイト</option>
+            <option>グレー/ブラック</option>
+            <option>グリッター/ラメ</option>
+          </select>
+        </div>
+        <button class="submit-btn" onclick="addNew()">新色として追加</button>
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+</div>
+
+
+<div class="sheet-bg" id="sheet-bg" onclick="maybeClose(event)">
+  <div class="sheet">
+    <div class="sheet-drag"></div>
+    <div class="sheet-hero" id="sh-hero"><div class="sheet-nail" id="sh-nail"></div></div>
+    <div class="sheet-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="sheet-num" id="sh-num"></div>
+        <span id="sh-badge" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;color:white"></span>
+      </div>
+      <div class="sheet-tex" id="sh-tex"></div>
+      <div class="sheet-desc" id="sh-desc"></div>
+      <div class="detail-grid" id="sh-grid"></div>
+      <div class="sheet-actions" id="sh-actions"></div>
+      <button class="sheet-close" onclick="closeSheet()">閉じる</button>
+    </div>
+  </div>
+</div>
+<nav class="nav">
+  <button class="nav-item active" id="nav-list" onclick="goPage('list')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>一覧
+  </button>
+  <button class="nav-item" id="nav-photo" onclick="goPage('photo')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>チャート
+  </button>
+  <button class="nav-item" id="nav-find" onclick="goPage('find')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="13" cy="13" r="7"/><path d="m3 3 4.5 4.5"/><circle cx="13" cy="13" r="2"/></svg>カラー検索
+  </button>
+  <button class="nav-item" id="nav-manage" onclick="goPage('manage')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>管理
+  </button>
+</nav>
+
+<script>
+
+const DEFAULT_COLORS = [
+  {id:"1",n:"1",c:"#dbcccf",tex:"パール",desc:"肌馴染みの良い微粒子パールの淡いピンク",status:"active",stars:2,cure:"×",hint:"ナチュラルだけど少しキラッと感も欲しいという方におすすめ！　グラデーションに人気"},
+  {id:"2",n:"2",c:"#fdc4cc",tex:"シアー",desc:"淡く優しいシアー系ピンク",status:"active",stars:1,cure:"×",hint:"ナチュラルだけどピンク感が少し強く欲しい方向き！一番ナチュラルに見えるのでグラデーションに人気"},
+  {id:"4",n:"4",c:"#fbc1d8",tex:"シアー/グリッター",desc:"大粒ラメの入ったライトピンク。シアー感のあるカラー",status:"active",stars:2,cure:"×",hint:"自爪が透けるのでカウンセリング・塗布時注意！Lラメよりギラギラ過ぎない。ワンカラー・グラデーションに人気"},
+  {id:"8",n:"8",c:"#ecc8c8",tex:"マット",desc:"マットな薄いピンク",status:"active",stars:2,cure:"〇",hint:"オフィス向き・クリアで薄めるとNo.112のように更にナチュラルに！ ワンカラー・グラデーション・フレンチどのデザインにも人気"},
+  {id:"9",n:"9",c:"#eec3de",tex:"マット",desc:"くすみのあるマットなパステルピンク。8番より少し青みがあるピンク",status:"active",stars:2,cure:"〇",hint:"No.8よりベージュ感が無く、少し青みがかったピンク・No.8同様、クリアで薄めるとよりナチュラルに！　ワンカラー・グラデーション・フレンチどのデザインにも人気"},
+  {id:"13",n:"13",c:"#f7b4ab",tex:"パール",desc:"偏光パールの入ったコーラルピンク",status:"active",stars:2,cure:"△",hint:"オレンジの偏光パールが入ったコーラルピンクをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"14",n:"14",c:"#e6adc1",tex:"マット",desc:"肌馴染みが良いマットのピンクベージュ",status:"active",stars:2,cure:"〇",hint:"No.8よりピンク感強いカラーをお探しの方におすすめ！　グラデーション・フレンチに人気"},
+  {id:"18",n:"18",c:"#fb83b3",tex:"マット",desc:"はっきりとしたピンク。マットな質感",status:"active",stars:2,cure:"〇",hint:"ビビットなピンクをご希望の方におすすめ！　フレンチに人気"},
+  {id:"19",n:"19",c:"#f05cba",tex:"シアー",desc:"シアーでグラデーションに最適なマゼンタピンク",status:"active",stars:1,cure:"×",hint:"ちゅるんとした、むらさきっぽいピンクをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"20",n:"20",c:"#d4357a",tex:"マット",desc:"マットなローズピンク",status:"active",stars:2,cure:"〇",hint:"こっくりとした大人っぽいローズピンク。　ワンカラー・フレンチに人気"},
+  {id:"21",n:"21",c:"#922052",tex:"マット",desc:"マットなボルドー。ワインのような赤",status:"active",stars:2,cure:"◎",double:true,hint:"ボルドーよりむらさき感強め。ワンカラー・フレンチが人気"},
+  {id:"23",n:"23",c:"#a80b22",tex:"マット",desc:"マットなダークレッド。赤味強めなボルドー",status:"active",stars:2,cure:"◎",double:true,hint:"秋冬定番のボルドーをご希望の方におすすめ！　ワンカラー・フレンチに人気"},
+  {id:"24",n:"24",c:"#d82c2c",tex:"マット",desc:"マットなレッド",status:"active",stars:2,cure:"◎",double:true,hint:"真っ赤といったらこれ！ワンカラー・フレンチに人気"},
+  {id:"26",n:"26",c:"#f07030",tex:"マット",desc:"マットで鮮やかなオレンジ。ワンカラーにも繊細なアートにも最適",status:"active",stars:2,cure:"◎",double:true,hint:"ビビットなオレンジをご希望の方におすすめ！ワンカラー・フレンチに人気"},
+  {id:"27",n:"27",c:"#ffc194",tex:"マット",desc:"カジュアルなパステルオレンジ",status:"active",stars:1,cure:"◎",double:true},
+  {id:"28",n:"28",c:"#fff6b3",tex:"マット",desc:"カジュアルなパステルイエロー",status:"active",stars:1,cure:"◎",double:true,hint:"バターみたいな明るいパステルカラー　ワンカラー・カラグラに人気"},
+  {id:"29",n:"29",c:"#f0d020",tex:"マット",desc:"マットで鮮やかなイエロー。ワンカラーにも繊細なアートにも最適",status:"active",stars:2,cure:"◎",double:true,hint:"ビビットなイエローをご希望の方におすすめ　ワンカラー・フレンチに人気"},
+  {id:"30",n:"30",c:"#e0d090",tex:"マット",desc:"くすみ感があるマットな淡いイエロー",status:"active",stars:2,cure:"◎",double:true,hint:"秋冬向け、マスタードイエローをご希望の方におすすめ　ワンカラー・フレンチに人気"},
+  {id:"32",n:"32",c:"#b7d8b0",tex:"パール",desc:"微粒子パールの入ったライトグリーン",status:"active",stars:2,cure:"〇",hint:"明るいパステルのミントカラーをご希望の方におすすめ！　フレンチに人気"},
+  {id:"33",n:"33",c:"#adb8b3",tex:"マット",desc:"グレイッシュなグリーン",status:"active",stars:2,cure:"〇",hint:"グレーにもブルーにもグリーンにも見える中間色　冬向き　フレンチ・グラデーションに人気"},
+  {id:"34",n:"34",c:"#a1c4a5",tex:"シアー",desc:"木の葉や草の葉裏のような渋くくすんだ薄緑色",status:"active",stars:1,cure:"△",hint:"春に大人っぽいくすみグリーンをお探しの方におすすめ！　クリアジェルで薄めると透け感は出るが、よりナチュラルになるよ！　グラデーションに人気"},
+  {id:"35",n:"35",c:"#889060",tex:"マット",desc:"マットなスモーキーカーキ",status:"active",stars:2,cure:"◎",double:true,hint:"秋向き　定番のカーキと言ったらこれ！　ワンカラー・フレンチに人気"},
+  {id:"36",n:"36",c:"#078353",tex:"マット",desc:"マットで鮮やかなグリーン。ワンカラーにも繊細なアートにも最適",status:"active",stars:2,cure:"◎",double:true,hint:"No.121より明るめのグリーン　ワンカラー・フレンチ人気"},
+  {id:"37",n:"37",c:"#99d6c2",tex:"マット",desc:"カジュアルなパステルエメラルドグリーン",status:"active",stars:1,cure:"〇",hint:"春夏向き　ティファニーブルーをお探しの方におすすめ！(クリアジェルで薄めるとマット感は減るが、少し鮮やかさを抑えられるよ)　フレンチ・グラデーションに人気"},
+  {id:"39",n:"39",c:"#ddedf3",tex:"マット",desc:"マットな青みのあるホワイト",status:"active",stars:2,cure:"〇",double:true,hint:"冬向き　ブルーとホワイトの間をお探しの方におすすめ！　フレンチに人気"},
+  {id:"40",n:"40",c:"#51c0d6",tex:"マット",desc:"スモーキーなターコイズブルー",status:"active",stars:2,cure:"×",hint:"夏向き　濃い水色をお探しの方におすすめ！　フレンチに人気"},
+  {id:"42",n:"42",c:"#075adf",tex:"マット",desc:"マットで鮮やかなブルー。ワンカラーにも繊細なアートにも最適",status:"active",stars:2,cure:"◎",double:true,hint:"定番のブルーと言ったらこれ！　フレンチに人気"},
+  {id:"43",n:"43",c:"#202870",tex:"マット",desc:"マットなダークネイビー。かなり暗めのネイビー",status:"active",stars:2,cure:"◎",double:true,hint:"定番のネイビーと言ったらこれ！　フレンチに人気"},
+  {id:"44",n:"44",c:"#52168d",tex:"マット",desc:"マットな青みが強いバイオレット",status:"active",stars:3,cure:"◎",double:true,hint:"定番のむらさきと言ったらこれ！　かなりテクスチャーが固いので1回の塗布量に注意！　フレンチに人気"},
+  {id:"45",n:"45",c:"#a6a6e2",tex:"マット",desc:"ブルー味のあるマットなラベンダー色",status:"active",stars:2,cure:"×",hint:"春向き　パステルパープルをお探しの方におすすめ！　グラデーションに人気"},
+  {id:"47",n:"47",c:"#cbb9d5",tex:"マット",desc:"少しくすんだパステルパープル",status:"active",stars:2,cure:"×",hint:"落ち着いたパステルをご希望の方におすすめ！　ワンカラー・フレンチに人気"},
+  {id:"48",n:"48",c:"#bf92a9",tex:"マット",desc:"くすみ感のあるローズピンク。フレンチにもグラデにも使いやすい",status:"active",stars:2,cure:"×",hint:"ナチュラルなパープルとピンクの間のような色　クリアジェルを混ぜると更にナチュラルになっておすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"49",n:"49",c:"#e1d1d1",tex:"シアー",desc:"グレージュ。ほんのりピンクやパープルに発色",status:"active",stars:1,cure:"×",hint:"ナチュラルなグレージュをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"50",n:"50",c:"#d1c6dd",tex:"パール/グリッター",desc:"パールと控えめな微粒子ラメの入ったシアーパープル",status:"active",stars:1,cure:"△",hint:"グレーとパープルの間の色をご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"51",n:"51",c:"#b1b2b4",tex:"マット",desc:"白味の強いグレー。少しシアー感がある",status:"active",stars:1,cure:"△",double:true,hint:"定番のグレーをご希望の方におすすめ！　ワンカラーに人気"},
+  {id:"52",n:"52",c:"#282828",tex:"マット",desc:"柔らかいマットなブラック。滲みやすいためしっかり硬化（60秒）",status:"active",stars:2,cure:"×",double:true,hint:"定番のブラックをご希望の方におすすめ！　ワンカラー・フレンチに人気"},
+  {id:"53",n:"53",c:"#361708",tex:"マット",desc:"マットなかなり暗めのダークブラウン（60秒硬化）",status:"active",stars:2,cure:"×",double:true,hint:"カラーチャートより実際に爪に塗るともう少し茶色みが出るよ！　フレンチに人気"},
+  {id:"54",n:"54",c:"#882e07",tex:"マット",desc:"マットなブラウン。赤味強め（60秒硬化）",status:"active",stars:2,cure:"×",double:true,hint:"チョコレートのようなカラーをご希望の方におすすめ！　ワンカラー・フレンチに人気"},
+  {id:"55",n:"55",c:"#c8b59d",tex:"シアー",desc:"シアーベージュ。日本人の肌になじむ、イエロー寄りのベージュ",status:"active",stars:1,cure:"◎",hint:"ナチュラルなブラウンベージュをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"56",n:"56",c:"#e0d29f",tex:"グリッター",desc:"シャンパンベージュ。強すぎないラメ",status:"active",stars:2,cure:"×",hint:"ベージュにシャンパンラメが入った大人なカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"57",n:"57",c:"#d5815d",tex:"マット",desc:"ヌーディで美しいピーチベージュ。フレンチにもグラデにも使いやすい",status:"active",stars:2,cure:"△",hint:"マットなテラコッタカラーをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"58",n:"58",c:"#f5827a",tex:"シアー",desc:"ちゅるんとしたオレンジピンク",status:"active",stars:1,cure:"◎",hint:"シアーなテラコッタカラーをご希望の方におすすめ！　クリアジェルで少し薄めると更にナチュラルになるよ！　グラデーションに人気"},
+  {id:"60",n:"60",c:"#EED8C0",tex:"シアー",desc:"ヌーディーなベージュ。シアーな質感",status:"active",stars:1,cure:"△",hint:"スキンカラーをご希望の方におすすめ！　クリアジェルで薄めると更にナチュラルに！　ワンカラー・グラデーションに人気"},
+  {id:"61",n:"61",c:"#f7cfa1",tex:"グリッター",desc:"ラメ入りベージュ。軽さがあります",status:"active",stars:2,cure:"△",hint:"No.60より少しオレンジみがあり細かいラメが入ったベージュ　クリアジェルで薄めるとよりナチュラルに！　グラデーションに人気"},
+  {id:"64",n:"64",c:"#f9cda9",tex:"シアー/グリッター",desc:"まるで砂糖菓子を想像させる可愛らしいシアーラメのオレンジ",status:"active",stars:2,cure:"△",hint:"No.4と同じ質感のオレンジベージュ、自爪が透けるカラー　ワンカラー・グラデーションに人気"},
+  {id:"65",n:"65",c:"#d6be9a",tex:"パール",desc:"微粒子パールの茶系ベージュ。肌なじみ◎",status:"active",stars:2,cure:"△",hint:"ブラウンベージュだけど、実際に自爪に乗せた方が光沢は出るが、肌なじみがいいカラー　ワンカラー・グラデーションに人気"},
+  {id:"66",n:"66",c:"#e4d0b9",tex:"マット",desc:"とても色味の淡い、マットなブラウンベージュ",status:"active",stars:2,cure:"△",hint:"No.60よりマットなベージュをご希望の方におすすめ！　自爪に乗せるとカラーチャートより白っぽく見えます　ワンカラー・グラデーションに人気"},
+  {id:"68",n:"68",c:"#f0ebd1",tex:"マット",desc:"肌なじみの良いベージュホワイト",status:"active",stars:2,cure:"△",hint:"黄みの強いマットなベージュで、カラーチャートで見るより自爪に乗せると白く見えることが多いです！　ワンカラー・フレンチに人気"},
+  {id:"69",n:"69",c:"#f2e5d4",tex:"シアー",desc:"シアーなアイボリー。薄付きで馴染みやすい",status:"active",stars:1,cure:"△",hint:"No.68よりシアーで少しオレンジみのあるベージュで、カラーチャートで見るより自爪に乗せた方が白く見えることがあります　ワンカラーに人気"},
+  {id:"70",n:"70",c:"#e9e9e2",tex:"マット",desc:"マットなパステルグレー。白味が強いグレー",status:"active",stars:2,cure:"△",hint:"白を挑戦してみたいけど、汚れや黄ばみ、派手になりすぎるのが気になるのが心配な方におすすめ！　自爪に乗せた時の方が白く見えることが多いです。　ワンカラー・フレンチに人気"},
+  {id:"71",n:"71",c:"#ecf2f4",tex:"パール",desc:"偏光パールの入ったホワイト。シアーな質感",status:"active",stars:2,cure:"△",hint:"ピンクベースの偏光パールで角度によってグリーンやブルーにも見えます　ワンカラー・グラデーションに人気"},
+  {id:"74",n:"74",c:"#FAFAFA",tex:"マット",desc:"ホワイト",status:"active",stars:2,cure:"△",double:true,hint:"定番のマットなホワイトと言ったらこれ！　ワンカラー・フレンチに人気(グラデーションにはNo.136がおすすめ！)"},
+  {id:"76",n:"76",c:"#e7f2f9",tex:"グリッター",desc:"大粒のオーロララメがぎっしり入ったクリアベースのグリッター。過剰硬化で黄ばむため30秒以内",status:"active",stars:3,cure:"〇",hint:"自爪が確実に透けるのでアートに使うことが多いジェルです"},
+  {id:"77",n:"77",c:"#d3d1d6",tex:"シアー/グリッター",desc:"指先が華やかになるレインボー乱切りホロラメ（黄ばみやすいため硬化30秒以内）",status:"active",stars:3,cure:"△",hint:"自爪が確実に透けるので、アートに使うことが多いジェルです。"},
+  {id:"78",n:"78",c:"#6897bb",tex:"シアー",desc:"レースの様に透け感がある青味の入ったブラックカラー",status:"active",stars:1,cure:"◎",hint:"自爪が確実に透けるのでカウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"79",n:"79",c:"#E8B020",tex:"シアー",desc:"クリアカラーの山吹色。べっ甲のベースカラー",status:"active",stars:2,cure:"◎",hint:"べっこう飴のようなカラーをご希望の方におすすめ！　自爪が確実に透けるのでカウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"81",n:"81",c:"#d5d6d1",tex:"グリッター",desc:"シルバーのグリッターカラー",status:"active",stars:3,cure:"×",hint:"L19より粒子が細かいラメをご希望の方におすすめ！(L19より黄みが出やすいです)　グラデーションに人気"},
+  {id:"82",n:"82",c:"#d2c04b",tex:"グリッター",desc:"ゴールドのグリッターカラー",status:"active",stars:3,cure:"×",hint:"L18より粒子が細かいラメをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"83",n:"83",c:"#d29856",tex:"グリッター",desc:"ブロンズのグリッターカラー",status:"active",stars:3,cure:"×",hint:"L17より粒子の細かいラメをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"84",n:"84",c:"#9cb5ce",tex:"グリッター",desc:"ブルーとシルバーのMIXグリッター",status:"active",stars:3,cure:"×",hint:"Lラメに近い粒子のラメカラー　ワンカラー・グラデーションに人気"},
+  {id:"85",n:"85",c:"#b2a4d6",tex:"グリッター",desc:"偏光ライトブルーパープルのグリッター",status:"active",stars:3,cure:"×",hint:"ブルーとパープルの間のラメカラーをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"86",n:"86",c:"#d5b5ae",tex:"グリッター",desc:"偏光ピンクゴールドグリッター",status:"active",stars:3,cure:"×",hint:"春、グラデーションに人気"},
+  {id:"87",n:"87",c:"#F0F0F8",tex:"グリッター",desc:"クリアベースの白の微粒子ラメ",status:"active",stars:3,cure:"×",hint:"自爪が透けやすいカラーのためカウンセリング、塗布時注意！　ワンカラーに人気"},
+  {id:"88",n:"88",c:"#80F040",tex:"マット",desc:"明るい蛍光緑",status:"active",stars:2,cure:"〇",double:true,hint:"No.89との差がカラーチャートで分かりづらいので要注意！　夏、ワンカラーに人気"},
+  {id:"89",n:"89",c:"#F0E820",tex:"マット",desc:"蛍光のマットな黄色",status:"active",stars:2,cure:"〇",double:true,hint:"夏に人気　ネオンイエローをご希望の方におすすめ！　ワンカラーに人気"},
+  {id:"90",n:"90",c:"#F07830",tex:"マット",desc:"蛍光マットなオレンジ",status:"active",stars:2,cure:"〇",double:true,hint:"夏に人気　ネオンオレンジをご希望のかたにおすすめ！　ワンカラーに人気"},
+  {id:"91",n:"91",c:"#F050C0",tex:"マット",desc:"蛍光のマットなピンク",status:"active",stars:2,cure:"〇",double:true,hint:"夏に人気　ネオンピンクをご希望の方におすすめ！　ワンカラーに人気"},
+  {id:"92",n:"92",c:"#d09080",tex:"マット",desc:"ヌードダークピンク。肌なじみの良いオレンジピンク",status:"active",stars:2,cure:"△",hint:"オレンジとピンクの中間カラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"93",n:"93",c:"#B07080",tex:"マット",desc:"くすみピンクカラー。48より暗め",status:"active",stars:2,cure:"〇",hint:"秋に人気　ブラウン寄りの落ち着いたピンクをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"94",n:"94",c:"#986060",tex:"マット",desc:"優しく知的な深みのあるローズブラウンカラー",status:"active",stars:2,cure:"〇",hint:"No.54に少し紫が混ざったようなカラー　ワンカラー・フレンチに人気"},
+  {id:"95",n:"95",c:"#909080",tex:"マット",desc:"マットなダークグレージュ。ブラウンに近い色味",status:"active",stars:2,cure:"〇"},
+  {id:"96",n:"96",c:"#86afca",tex:"シアー",desc:"黄味が少しあるくすんだシアーブルー",status:"active",stars:1,cure:"△",hint:"くすみブルーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"97",n:"97",c:"#c9a1b6",tex:"マット/シアー",desc:"肌なじみの良いローズグレージュカラー",status:"active",stars:1,cure:"△",hint:"No.48よりシアー感があり、紫みが強く出るカラー　ワンカラー・グラデーションに人気"},
+  {id:"98",n:"98",c:"#e0d4d2",tex:"マット/シアー",desc:"肌なじみ抜群のピンクベージュカラー",status:"active",stars:1,cure:"△",hint:"自爪に近いナチュラルなカラーをご希望の方におすすめ！　ワンカラーに人気"},
+  {id:"101",n:"101",c:"#dca6e3",tex:"マット",desc:"マットなグレーが強いラベンダーパープル",status:"active",stars:2,cure:"〇",hint:"ピンク寄りの紫をご希望の方におすすめ！　ワンカラー・フレンチに人気"},
+  {id:"102",n:"102",c:"#b6b6aa",tex:"シアー",desc:"色っぽい指先をつくる曇り空のようなシアーグレージュ",status:"active",stars:1,cure:"△",hint:"ブラウンとグレーの間をご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"103",n:"103",c:"#E0C8B0",tex:"シアー",desc:"素肌本来の美しさを追求できるナチュラルスキンベージュ",status:"active",stars:1,cure:"△",hint:"No.58とNo.60の間のカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"104",n:"104",c:"#F0A0C0",tex:"グリッター",desc:"ざくざくのラメが沢山入った桜色のキラキラピンク",status:"active",stars:2,cure:"△"},
+  {id:"105",n:"105",c:"#e3e8ed",tex:"パール",desc:"シアー系偏光パールのホワイト。ほんのりブルーがかって見えます",status:"active",stars:1,cure:"△",hint:"No.71と違いブルーがメインの偏光パールがあり夏に人気！　ワンカラーに人気"},
+  {id:"106",n:"106",c:"#028eca",tex:"シアー",desc:"透き通るようなクリアカラーのビビットライトブルー",status:"active",stars:2,cure:"〇",hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"107",n:"107",c:"#ae6578",tex:"シアー",desc:"透け感のある、ダークボルドークリアカラー",status:"active",stars:1,cure:"×",hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"108",n:"108",c:"#d13e23",tex:"シアー",desc:"透け感のある、ブラウン強めの琥珀色",status:"active",stars:2,cure:"△",hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"109",n:"109",c:"#F8F4EC",tex:"シアー",desc:"シアー系オフホワイト",status:"active",stars:1,cure:"〇",hint:"ミルクや練乳のようなカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"110",n:"110",c:"#c8bae9",tex:"シアー/パール",desc:"シアーの偏光シェルパープル",status:"active",stars:2,cure:"△",hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"112",n:"112",c:"#F0D8D0",tex:"マット/シアー",desc:"OC（オークル）白味の強い、薄いピンクベージュ",status:"active",stars:2,cure:"△",hint:"No.98よりベージュ感を少なくしたカラー　ワンカラーに人気"},
+  {id:"113",n:"113",c:"#C08870",tex:"シアー",desc:"透け感がある、くすんだテラコッタクリアカラー",status:"active",stars:1,cure:"〇",hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"114",n:"114",c:"#F8F8F4",tex:"パール/グリッター",desc:"少しだけ透け感のある微粒子ラメの入った優しいホワイト",status:"active",stars:2,cure:"〇",hint:"真っ白にパール感がほしい方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"115",n:"115",c:"#A8C8E8",tex:"シアー/パール",desc:"抜け感のある上品で華やかなブルーパールカラー",status:"active",stars:2,cure:"△",hint:"シアー感のあるパープルとブルーの間のカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"116",n:"116",c:"#D0C0E0",tex:"シアー",desc:"ペールトーンのパープル",status:"active",stars:2,cure:"△",hint:"シアーなミルキーパープルをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"117",n:"117",c:"#A03040",tex:"パール",desc:"マット感のあるパールで色気の溢れる暗めのレッド",status:"active",stars:2,cure:"△",hint:"ボルドーにメタルのようなパール感が欲しい方におすすめ！　ワンカラーに人気"},
+  {id:"118",n:"118",c:"#F8D0C0",tex:"シアー",desc:"パステルが苦手な方でも取り入れられる、ピーチファズカラー",status:"active",stars:1,cure:"〇",hint:"ピンクとオレンジの間のカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"119",n:"119",c:"#E04090",tex:"マット",desc:"透け感のないマゼンタピンク",status:"active",stars:2,cure:"△",hint:"No.91より赤みのあるバービーをイメージするビビットなピンク　ワンカラー・フレンチに人気"},
+  {id:"120",n:"120",c:"#B0E0C0",tex:"シアー",desc:"ちゅるんとした白みのあるグリーン",status:"active",stars:1,cure:"〇",hint:"落ち着いたミントカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"121",n:"121",c:"#687050",tex:"マット",desc:"マットでディープなカーキ",status:"active",stars:2,cure:"△",hint:"No.35とNo.36の間のカラー　ワンカラー・フレンチに人気"},
+  {id:"122",n:"122",c:"#888880",tex:"マット",desc:"炭のようなスモーキーグレー（20秒硬化）",status:"active",stars:2,cure:"△",hint:"No.51とNo.52の間のカラー　ワンカラー・フレンチに人気"},
+  {id:"123",n:"123",c:"#D0A0B0",tex:"マット/シアー",desc:"モーブピンク。落ち着いたピンクに少しむらさきがかったニュアンス",status:"active",stars:2,cure:"△",hint:"No.14とNo.58の間のカラー　ワンカラー・グラデーションに人気"},
+  {id:"124",n:"124",c:"#D0B8D8",tex:"パール",desc:"青みピンクのパールカラー",status:"active",stars:2,cure:"△",hint:"ホワイト寄りのピンクパールカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"125",n:"125",c:"#E0C0B0",tex:"マット",desc:"マットな少しベージュ強めのピンクベージュ",status:"active",stars:2,cure:"△",hint:"No.14とNo.55の間のカラー　ワンカラー・グラデーションに人気"},
+  {id:"126",n:"126",c:"#F09090",tex:"シアー",desc:"シアー系のコーラルピンク。クリアで薄めずにちゅるんとさせることが出来る",status:"active",stars:1,cure:"〇",hint:"自爪が透けやすいカラーなので、カウンセリング・塗布時注意！　ワンカラー・グラデーションに人気"},
+  {id:"127",n:"127",c:"#8098B8",tex:"シアー/グリッター",desc:"くすみ系のラメ入りブルーカラー",status:"active",stars:1,cure:"〇",hint:"くすみブルーにシュガーのようなラメが入ったカラー　ワンカラー・グラデーションに人気"},
+  {id:"128",n:"128",c:"#9060A0",tex:"マット",desc:"くすみ系の赤紫カラー",status:"active",stars:2,cure:"△",hint:"No.23にピンクを足したカラー　ワンカラー・フレンチに人気"},
+  {id:"129",n:"129",c:"#F0D0C0",tex:"シアー/パール",desc:"細かいラメ入りのピンクベージュ、オフィスネイル向き",status:"active",stars:1,cure:"〇",hint:"ピンクにシャンパンベージュのラメが入ったカラー　ワンカラー・グラデーションに人気"},
+  {id:"130",n:"130",c:"#E8C0C0",tex:"シアー",desc:"くすみピンクのシアーカラー、オフィスネイル向き",status:"active",stars:1,cure:"〇",hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"131",n:"131",c:"#D04040",tex:"グリッター",desc:"キラキラした大きめラメを使った目を引くラメカラーのレッド",status:"active",stars:2,cure:"△",hint:"明るめのレッドにザクザクとしたラメが入ったカラー　ワンカラー・グラデーションに人気"},
+  {id:"132",n:"132",c:"#D0C080",tex:"グリッター",desc:"シャンパンゴールド（81と82の中間）",status:"active",stars:3,cure:"×",hint:"No.81とNo.82の間のラメカラー　ワンカラー・フレンチに人気"},
+  {id:"L17",n:"L17",c:"#D8C080",tex:"グリッターラメ",desc:"ゴールド系グリッター",status:"active",stars:3,cure:"△"},
+  {id:"L18",n:"L18",c:"#C8B060",tex:"グリッターラメ",desc:"ゴールドグリッター",status:"active",stars:3,cure:"△"},
+  {id:"L19",n:"L19",c:"#C8C890",tex:"グリッターラメ",desc:"シャンパングリッター",status:"active",stars:3,cure:"△"},
+  {id:"L20",n:"L20",c:"#E0D8C0",tex:"グリッターラメ",desc:"クリアゴールドラメ",status:"active",stars:3,cure:"△"},
+  {id:"L21",n:"L21",c:"#C8D0E0",tex:"グリッターラメ",desc:"シルバーグリッター",status:"active",stars:3,cure:"△"},
+  {id:"L22",n:"L22",c:"#E0C0D8",tex:"グリッターラメ",desc:"ピンクシルバーグリッター",status:"active",stars:3,cure:"△"},
+  {id:"L23",n:"L23",c:"#D8C0E0",tex:"グリッターラメ",desc:"パープルシルバー",status:"active",stars:3,cure:"△"},
+  {id:"L24",n:"L24",c:"#C8C8E8",tex:"グリッターラメ",desc:"ブルーシルバー",status:"active",stars:3,cure:"△"},
+  {id:"L26",n:"L26",c:"#A0D8C8",tex:"グリッターラメ",desc:"グリーン系グリッター",status:"active",stars:3,cure:"△"},
+  {id:"L27",n:"L27",c:"#88C0D0",tex:"グリッターラメ",desc:"ターコイズグリッター",status:"active",stars:3,cure:"△"},
+  {id:"L28",n:"L28",c:"#A0C0E0",tex:"グリッターラメ",desc:"ブルーラメ",status:"active",stars:3,cure:"△"},
+  {id:"L35",n:"L35",c:"#E8E8E8",tex:"グリッターラメ",desc:"ホワイトグリッター",status:"active",stars:3,cure:"△"},
+  {id:"L36",n:"L36",c:"#303030",tex:"グリッターラメ",desc:"ブラックグリッター",status:"active",stars:3,cure:"△"},
+  {id:"L37",n:"L37",c:"#E0D8F0",tex:"グリッターラメ",desc:"オーロラグリッター",status:"active",stars:3,cure:"△"},
+  {id:"L39",n:"L39",c:"#F0E8D8",tex:"グリッターラメ",desc:"オーロララメ",status:"active",stars:3,cure:"△"},
+  {id:"L40",n:"L40",c:"#E8D8F0",tex:"グリッターラメ",desc:"オーロラパープル",status:"active",stars:3,cure:"△"},
+  {id:"L41",n:"L41",c:"#C8E0F8",tex:"グリッターラメ",desc:"オーロラブルー",status:"active",stars:3,cure:"△"},
+  {id:"L52",n:"L52",c:"#F0E0E8",tex:"グリッターラメ",desc:"オーロラピンク",status:"active",stars:3,cure:"△"},
+  {id:"L29",n:"L29",c:"#F0E8E0",tex:"グリッターラメ",desc:"小ホロ入りラメ",status:"active",stars:3,cure:"△"},
+  {id:"L30",n:"L30",c:"#F0F0F0",tex:"グリッターラメ",desc:"小ホロシルバー",status:"active",stars:3,cure:"△"},
+  {id:"L31",n:"L31",c:"#F0E0F0",tex:"グリッターラメ",desc:"小ホロパープル",status:"active",stars:3,cure:"△"},
+  {id:"L32",n:"L32",c:"#E0E8F8",tex:"グリッターラメ",desc:"小ホロブルー",status:"active",stars:3,cure:"△"},
+  {id:"L33",n:"L33",c:"#E0F0E8",tex:"グリッターラメ",desc:"小ホログリーン",status:"active",stars:3,cure:"△"},
+  {id:"L34",n:"L34",c:"#F8F0D8",tex:"グリッターラメ",desc:"小ホロゴールド",status:"active",stars:3,cure:"△"},
+  {id:"L38",n:"L38",c:"#F8E0F0",tex:"グリッターラメ",desc:"小ホロピンク",status:"active",stars:3,cure:"△"},
+  {id:"L51",n:"L51",c:"#F0F8F8",tex:"グリッターラメ",desc:"小ホロ",status:"active",stars:3,cure:"△"},
+  {id:"L47",n:"L47",c:"#F8F0F8",tex:"グリッターラメ",desc:"微粒子チラメ",status:"active",stars:3,cure:"△"},
+  {id:"L48",n:"L48",c:"#F8F8F8",tex:"グリッターラメ",desc:"微粒子チラメ ホワイト",status:"active",stars:3,cure:"△"},
+  {id:"L49",n:"L49",c:"#E8F0F8",tex:"グリッターラメ",desc:"微粒子チラメ ブルー",status:"active",stars:3,cure:"△"},
+  {id:"L50",n:"L50",c:"#F8E8F0",tex:"グリッターラメ",desc:"微粒子チラメ ピンク",status:"active",stars:3,cure:"△"},
+  {id:"L42",n:"L42",c:"#E8E8F0",tex:"グリッターラメ",desc:"微粒子チラメ",status:"active",stars:3,cure:"△"},
+  {id:"L43",n:"L43",c:"#F0E8E8",tex:"グリッターラメ",desc:"微粒子チラメ",status:"active",stars:3,cure:"△"},
+  {id:"L44",n:"L44",c:"#F8F4F0",tex:"グリッターラメ",desc:"微粒子ラメ",status:"active",stars:3,cure:"△"},
+  {id:"L45",n:"L45",c:"#E8F8F8",tex:"グリッターラメ",desc:"微粒子ラメ ブルー",status:"active",stars:3,cure:"△"},
+  {id:"L46",n:"L46",c:"#F0E8F8",tex:"グリッターラメ",desc:"微粒子ラメ パープル",status:"active",stars:3,cure:"△"},
+  {id:"FL1",n:"FL1",c:"#F8C030",tex:"フラッシュラメ",desc:"フラッシュラメカラー",status:"active",stars:3,cure:"△"},
+  {id:"FL2",n:"FL2",c:"#C8D0F0",tex:"フラッシュラメ",desc:"フラッシュラメ ブルー",status:"active",stars:3,cure:"△"},
+  {id:"FL3",n:"FL3",c:"#F0C8E8",tex:"フラッシュラメ",desc:"フラッシュラメ ピンク",status:"active",stars:3,cure:"△"},
+  {id:"FL4",n:"FL4",c:"#C0E0D0",tex:"フラッシュラメ",desc:"フラッシュラメ グリーン",status:"active",stars:3,cure:"△"},
+  {id:"FL5",n:"FL5",c:"#acdcce",tex:"フラッシュラメ",desc:"グリーン",status:"active",stars:1,cure:"△"},
+  {id:"133",n:"133",c:"#F0D8C8",tex:"シアー",desc:"シアーなベージュピンク",status:"active",stars:1,cure:"〇",hint:"No.98・No.112よりベージュ感があるカラー　透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
+  {id:"134",n:"134",c:"#E8D0C0",tex:"シアー",desc:"肌なじみの良いくすんだシアーなピュアベージュ",status:"active",stars:1,cure:"〇",hint:"No.68よりシアー感がありベージュみも足されたカラー　ワンカラー・グラデーションに人気"},
+  {id:"135",n:"135",c:"#B8D8F0",tex:"マット",desc:"春の澄んだ空色をイメージした淡い水色",status:"active",stars:2,cure:"△",hint:"No.39より少しシアー感のあるブルー　ワンカラー・グラデーションに人気"},
+  {id:"136",n:"136",c:"#F0EDE8",tex:"シアー/マット",desc:"白グラ向けカラー、73よりシアー感がある",status:"active",stars:2,cure:"△",hint:"ちゅるんとした白グラデーションをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"137",n:"137",c:"#F5C5C0",tex:"シアー",desc:"新色・ピーチピンク",status:"new",stars:1,cure:"◎",hint:"No.126よりくすみがあるピンク　ワンカラー・グラデーションに人気"},
+  {id:"138",n:"138",c:"#C8C0B8",tex:"マット",desc:"新色・グレージュ",status:"new",stars:2,cure:"〇",hint:"ホワイト寄りのグレーとパープルの間のカラー　ワンカラー・グラデーションに人気"},
+  {id:"139",n:"139",c:"#303848",tex:"シアー",desc:"新色・透明感ブラック",status:"new",stars:1,cure:"〇",hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"}
+];
+
+// アニメーション種別をtexで自動判定
+const isHoloColor    = c => c.tex && (c.tex.includes('ホロ') || c.id === '76');
+const isGlitterColor = c => c.tex && (c.tex.includes('グリッター') || c.tex.includes('ラメ') || c.tex.includes('フラッシュ'));
+const isPearlColor   = c => c.tex && c.tex.includes('パール') && !isGlitterColor(c);
+const isSheerColor   = c => c.tex && c.tex.includes('シアー') && !isHoloColor(c);
+let data=[], searchQ='', activeFilter='すべて', selectedId=null;
+
+const SB_URL = 'https://xsccgzmaoxgaauiwqobt.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzY2Nnem1hb3hnYWF1aXdxb2J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzOTkxMTksImV4cCI6MjA5Njk3NTExOX0.ONDZmgp2yvfvK2a4hJYj2QBA51hwrTbb2oWkfmgGP7Q';
+const STORE_ID = 'main';
+
+async function sbGet(path, opts={}) {
+  const headers = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...(opts.headers || {})
+  };
+  const { headers: _h, ...restOpts } = opts;
+  const r = await fetch(SB_URL + path, {
+    headers,
+    ...restOpts
+  });
+  return r;
+}
+async function loadData() {
+  // file://で開いた場合はローカルデータのみ使用
+  if (location.protocol === 'file:') {
+    try {
+      const s = localStorage.getItem('nn_data_v2');
+      data = s ? JSON.parse(s) : DEFAULT_COLORS.map(c=>({...c}));
+    } catch(e) {
+      data = DEFAULT_COLORS.map(c=>({...c}));
+    }
+    mergeDoubleField();
+    return;
+  }
+  try {
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+    const fetchData = sbGet('/rest/v1/nail_colors?id=eq.' + STORE_ID + '&select=data');
+    const r = await Promise.race([fetchData, timeout]);
+    const rows = await r.json();
+    if (rows && rows[0] && rows[0].data) {
+      data = rows[0].data;
+      mergeDoubleField();
+      return;
+    }
+  } catch(e) {
+    console.warn('Supabase load failed:', e.message);
+  }
+  try {
+    const s = localStorage.getItem('nn_data_v2');
+    data = s ? JSON.parse(s) : DEFAULT_COLORS.map(c=>({...c}));
+  } catch(e2) {
+    data = DEFAULT_COLORS.map(c=>({...c}));
+  }
+  // DEFAULT_COLORSのdoubleフィールドを補完（Supabaseデータが古い場合）
+  mergeDoubleField();
+}
+
+function deleteColor(id) {
+  if (!confirm('このカラーを削除しますか？')) return;
+  data = data.filter(c => c.id !== id);
+  save();
+  renderAll();
+  showToast('削除しました');
+}
+
+function deleteColorConfirm(id) {
+  const c = data.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm(`No.${c.n} ${c.desc} を完全に削除しますか？`)) return;
+  data = data.filter(x => x.id !== id);
+  save();
+  renderAll();
+  closeSheet();
+  showToast('削除しました');
+}
+
+function mergeDoubleField() {
+  const defMap = {};
+  DEFAULT_COLORS.forEach(c => { defMap[c.id] = c; });
+  data.forEach(c => {
+    if (c.double === undefined && defMap[c.id] && defMap[c.id].double) {
+      c.double = defMap[c.id].double;
+    }
+    // hintもDEFAULT_COLORSから補完
+    if (!c.hint && defMap[c.id] && defMap[c.id].hint) {
+      c.hint = defMap[c.id].hint;
+    }
+  });
+}
+async function save() {
+  // file://では保存をスキップ
+  if (location.protocol === 'file:') {
+    try { localStorage.setItem('nn_data_v2', JSON.stringify(data)); } catch(e){}
+    if(typeof showToast==='function') showToast('💾 ローカルに保存しました');
+    return;
+  }
+  try {
+    const check = await sbGet('/rest/v1/nail_colors?id=eq.' + STORE_ID);
+    const rows = await check.json();
+    if (rows && rows.length > 0) {
+      await sbGet('/rest/v1/nail_colors?id=eq.' + STORE_ID, {
+        method: 'PATCH',
+        body: JSON.stringify({ data: data, updated_at: new Date().toISOString() })
+      });
+    } else {
+      await sbGet('/rest/v1/nail_colors', {
+        method: 'POST',
+        body: JSON.stringify({ id: STORE_ID, data: data, updated_at: new Date().toISOString() })
+      });
+    }
+    showToast('✅ 保存しました');
+  } catch(e) {
+    console.error('Save error:', e);
+    showToast('⚠️ 保存失敗: ' + e.message);
+  }
+}
+async function uploadPhoto(file) {
+  showLoading('写真をアップロード中...');
+  try {
+    // ファイル名を固定（日本語ファイル名対策）
+    const ext = (file.name.split('.').pop().toLowerCase().match(/^(jpg|jpeg|png|webp)$/) || ['jpg'])[0];
+    const path = 'chart.' + ext;
+    // x-upsertで上書きアップロード
+    const r = await fetch(SB_URL + '/storage/v1/object/chart-photos/' + path, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+    hideLoading();
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({}));
+      console.error('Upload error:', r.status, err);
+      throw new Error('アップロード失敗: ' + (err.message || r.status));
+    }
+    const url = SB_URL + '/storage/v1/object/public/chart-photos/' + path + '?t=' + Date.now();
+    await savePhotoUrl(url);
+    return url;
+  } catch(e) {
+    hideLoading();
+    throw e;
+  }
+}
+async function savePhotoUrl(url) {
+  // まず既存レコードを確認
+  const check = await sbGet('/rest/v1/nail_colors?id=eq.photo_url');
+  const rows = await check.json();
+  if (rows && rows.length > 0) {
+    // UPDATE
+    await sbGet('/rest/v1/nail_colors?id=eq.photo_url', {
+      method: 'PATCH',
+      body: JSON.stringify({ data: { url }, updated_at: new Date().toISOString() })
+    });
+  } else {
+    // INSERT
+    await sbGet('/rest/v1/nail_colors', {
+      method: 'POST',
+      body: JSON.stringify({ id: 'photo_url', data: { url }, updated_at: new Date().toISOString() })
+    });
+  }
+  console.log('Photo URL saved:', url);
+}
+async function loadPhotoUrl() {
+  if (location.protocol === 'file:') return null;
+  try {
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+    const fetchPhoto = sbGet('/rest/v1/nail_colors?id=eq.photo_url&select=data');
+    const r = await Promise.race([fetchPhoto, timeout]);
+    const rows = await r.json();
+    if (rows && rows[0] && rows[0].data && rows[0].data.url) return rows[0].data.url;
+  } catch(e) {
+    console.warn('Photo URL load failed:', e.message);
+  }
+  return null;
+}
+
+
+const FILTERS = ["すべて","ピンク系","レッド/オレンジ","イエロー/グリーン","ブルー/パープル","ベージュ/ホワイト","グレー/ブラック","ブラウン系","グリッター/ラメ","廃番","新色"];
+function filterMatch(c, f) {
+  if (f === "すべて") return true;
+  if (f === "廃番") return c.status === "disc";
+  if (f === "新色") return c.status === "new";
+  // categoryフィールドがあればそれを優先
+  if (c.category) return c.category === f;
+  // なければ従来の番号ベース判定
+  const n = parseInt(c.n) || 0;
+  const isLame = c.id.startsWith("L") || c.id.startsWith("FL") || c.tex.includes("ラメ") || c.tex.includes("グリッター");
+  if (f === "グリッター/ラメ") return isLame;
+  if (isLame) return false;
+  if (f === "ピンク系") return (n>=1&&n<=20)||(n===92)||(n===93)||(n===104)||(n===119)||(n===123)||(n===124)||(n===126)||(n===130);
+  if (f === "レッド/オレンジ") return (n>=21&&n<=27)||(n===58)||(n===64)||(n===90)||(n===107)||(n===113)||(n===117)||(n===131);
+  if (f === "イエロー/グリーン") return (n>=28&&n<=37)||(n===79)||(n===88)||(n===89)||(n===120)||(n===121)||(n===135);
+  if (f === "ブルー/パープル") return (n>=38&&n<=50)||(n===84)||(n===85)||(n===96)||(n===101)||(n===106)||(n===110)||(n===115)||(n===116)||(n===127)||(n===128)||(n===138);
+  if (f === "ベージュ/ホワイト") return (n>=55&&n<=75)||(n===94)||(n===95)||(n===97)||(n===98)||(n===103)||(n===108)||(n===109)||(n===112)||(n===118)||(n===125)||(n===129)||(n===133)||(n===134)||(n===136)||(n===137);
+  if (f === "グレー/ブラック") return (n===51)||(n===52)||(n===53)||(n===54)||(n===70)||(n===78)||(n===102)||(n===122)||(n===139);
+  return false;
+}
+
+
+function renderStats() {
+  const isLame = c => c.id.startsWith("L") || c.id.startsWith("FL");
+  const active = data.filter(c => c.status !== "disc");
+  const normal = active.filter(c => !isLame(c));
+  const lame   = active.filter(c => isLame(c));
+  const disc   = data.filter(c => c.status === "disc").length;
+  const nw     = data.filter(c => c.status === "new").length;
+  if(document.getElementById("s-total")) document.getElementById("s-total").textContent = normal.length;
+  if(document.getElementById("s-lame"))  document.getElementById("s-lame").textContent  = lame.length;
+  if(document.getElementById("s-disc"))  document.getElementById("s-disc").textContent  = disc;
+  if(document.getElementById("s-new"))   document.getElementById("s-new").textContent   = nw;
+  // サブタイトル：全色数（廃番・新色含む）
+  const normalAll = data.filter(c => !isLame(c));
+  const lameAll   = data.filter(c => isLame(c));
+  const newCount  = data.filter(c => c.status === "new").length;
+  const discCount = data.filter(c => c.status === "disc").length;
+  if(document.getElementById("list-sub")) document.getElementById("list-sub").textContent = "";
+}
+function renderFilters() {
+  const el = document.getElementById("filter-row");
+  if (!el) return;
+  el.innerHTML = FILTERS.map(f => {
+    const cls = f==="廃番" ? "disc-filter" : f==="新色" ? "new-filter" : "";
+    return `<button class="chip ${cls}${f===activeFilter?" on":""}" onclick="setFilter('${f}')">${f}</button>`;
+  }).join("");
+}
+function setFilter(f) { activeFilter = f; renderFilters(); renderList(); }
+
+function cureLabel(cure) {
+  switch(cure) {
+    case "◎": return { text: "特に注意", color: "#e85d5d", bg: "#fdeaea" };
+    case "〇": return { text: "やや注意", color: "#d97706", bg: "#fef3c7" };
+    case "△": return { text: "普通",     color: "#6b7280", bg: "#f3f4f6" };
+    case "×": return { text: "低い",     color: "#3a9e6b", bg: "#e8f7ef" };
+    default:  return { text: "—",        color: "#6b7280", bg: "#f3f4f6" };
+  }
+}
+function findByNumber(val) {
+  const q = val.trim().toLowerCase();
+  const el = document.getElementById("find-num-result");
+  if (!q) { el.style.display = "none"; return; }
+
+  // 前方一致・部分一致で検索
+  const hits = data.filter(c =>
+    c.n.toLowerCase().startsWith(q) || c.n.toLowerCase() === q
+  ).slice(0, 5);
+
+  if (!hits.length) {
+    el.style.display = "block";
+    el.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--text3)">該当するカラーが見つかりません</div>';
+    return;
+  }
+
+  el.style.display = "block";
+  el.innerHTML = hits.map(c => {
+    const stars = "★".repeat(c.stars||2) + "☆".repeat(4-(c.stars||2));
+    const cl = cureLabel(c.cure);
+    const badge = c.status==="disc"
+      ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--disc-light);color:var(--disc);font-weight:700">廃番</span>`
+      : c.status==="new"
+      ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--new-light);color:var(--new);font-weight:700">新色</span>`
+      : "";
+    return `<div onclick="openSheet('${c.id}')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <div style="width:44px;height:58px;flex-shrink:0;border-radius:48% 48% 42% 42%/55% 55% 45% 45%;border:1px solid rgba(0,0,0,0.06);background:${c.c}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <span style="font-size:14px;font-weight:700" class="notranslate">No.${c.n}</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--text2)">${c.tex}</span>
+          ${badge}
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${c.desc}</div>
+        <div style="font-size:11px;color:var(--text3)">テクスチャー: ${stars} &nbsp;硬化不良: <span style="padding:1px 7px;border-radius:8px;background:${cl.bg};color:${cl.color};font-weight:700">${cl.text}</span>${c.double ? ' &nbsp;<span style="padding:1px 7px;border-radius:8px;background:var(--new-light);color:var(--new);font-weight:700">2度塗り推奨</span>' : ''}</div>
+      </div>
+      <div style="color:var(--text3);font-size:18px">›</div>
+    </div>`;
+  }).join("");
+}
+
+function sortData(items) {
+  return items.slice().sort((a, b) => {
+    const aIsL  = a.id.startsWith("L");
+    const aIsFL = a.id.startsWith("FL");
+    const bIsL  = b.id.startsWith("L");
+    const bIsFL = b.id.startsWith("FL");
+    // 通常 → L → FL の順
+    const aRank = aIsFL ? 2 : aIsL ? 1 : 0;
+    const bRank = bIsFL ? 2 : bIsL ? 1 : 0;
+    if (aRank !== bRank) return aRank - bRank;
+    // 同じグループ内は番号順（数値 or 文字列）
+    const aNum = parseInt(a.n) || a.n;
+    const bNum = parseInt(b.n) || b.n;
+    if (typeof aNum === "number" && typeof bNum === "number") return aNum - bNum;
+    return String(a.n).localeCompare(String(b.n));
+  });
+}
+
+function renderList() {
+  const el = document.getElementById("color-list");
+  if (!el) return;
+  const q = searchQ.trim().toLowerCase();
+  const items = sortData(data.filter(c => {
+    const mq = !q || c.n.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q) || c.tex.toLowerCase().includes(q);
+    // 閲覧モードでは廃番を非表示（管理モードでは表示）
+    if (!isAdminMode && c.status === 'disc' && activeFilter !== '廃番') return false;
+    return mq && filterMatch(c, activeFilter);
+  }));
+  if (!items.length) { el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">該当なし</div>`; return; }
+  el.innerHTML = items.map(c => {
+    const stars = "★".repeat(c.stars||2) + "☆".repeat(4-(c.stars||2));
+    const badge = c.status==="disc" ? `<span class="status-badge disc">廃番</span>` : c.status==="new" ? `<span class="status-badge new">新色</span>` : "";
+    const cardCls = c.status==="disc" ? " is-disc" : c.status==="new" ? " is-new" : "";
+    const isHolo    = isHoloColor(c);
+    const isGlitter = isGlitterColor(c);
+    const isPearl   = isPearlColor(c);
+    const kiraColor = (() => {
+      const hx = c.c.replace("#","");
+      const rx = parseInt(hx.substr(0,2),16), gx = parseInt(hx.substr(2,2),16), bx = parseInt(hx.substr(4,2),16);
+      return (0.299*rx + 0.587*gx + 0.114*bx) < 128 ? "white" : "#c8a800";
+    })();
+    let chipHtml;
+    if (isHolo) {
+      chipHtml = `<div class="nail-chip-wrap"><div class="nail-chip" style="background:${c.c}"></div><span class="kira-star" style="top:4px;left:8px;animation-delay:0s;color:${kiraColor}">✦</span><span class="kira-star" style="top:18px;right:5px;animation-delay:0.5s;color:${kiraColor}">✧</span><span class="kira-star" style="top:32px;left:12px;animation-delay:0.9s;color:${kiraColor}">✦</span><span class="kira-star" style="bottom:10px;right:8px;animation-delay:0.3s;color:${kiraColor}">✧</span></div>`;
+    } else if (isGlitter) {
+      const isAlsoSheer = isSheerColor(c);
+      chipHtml = `<div class="nail-chip-wrap"><div class="nail-chip" style="background:${c.c}"></div><div class="lame-texture"></div>${isAlsoSheer ? '<div class="sheer-overlay"></div>' : ''}<span class="glitter-spark" style="top:5px;left:9px;animation-delay:0s;color:${kiraColor}">✦</span><span class="glitter-spark" style="top:22px;right:7px;animation-delay:0.6s;color:${kiraColor}">✦</span><span class="glitter-spark" style="bottom:11px;left:7px;animation-delay:1.1s;color:${kiraColor}">✦</span></div>`;
+    } else if (isPearl) {
+      const isAlsoPearlSheer = isSheerColor(c);
+      chipHtml = `<div class="nail-chip-wrap"><div class="nail-chip" style="background:${c.c}"></div><div class="pearl-shine"></div>${isAlsoPearlSheer ? '<div class="sheer-overlay"></div>' : ''}</div>`;
+    } else if (c.tex && c.tex.includes('シアー') && !isGlitter) {
+      chipHtml = `<div class="nail-chip-wrap"><div class="nail-chip" style="background:${c.c}"></div><div class="sheer-overlay"></div></div>`;
+    } else {
+      chipHtml = `<div class="nail-chip" style="background:${c.c}"></div>`;
+    }
+    return `<div class="color-card${cardCls}" onclick="openSheet('${c.id}')">
+      ${chipHtml}
+      <div class="card-info">
+        <div class="card-row1"><span class="card-num notranslate">No.${c.n}</span><span class="card-tex">${c.tex}</span></div>
+        <div class="card-desc">${c.desc}</div>
+        <div class="card-stars">テクスチャー: ${stars} &nbsp;硬化不良: <span style="padding:1px 7px;border-radius:8px;font-weight:700;background:${cureLabel(c.cure).bg};color:${cureLabel(c.cure).color}">${cureLabel(c.cure).text}</span>${c.double ? ' &nbsp;<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:var(--new-light);color:var(--new);font-weight:700">2度塗り推奨</span>' : ''}</div>
+      </div>${badge}</div>`;
+  }).join("");
+}
+
+
+function darken(hex, amt) {
+  const h = hex.replace("#","");
+  const n = parseInt(h.length===3?h.split("").map(x=>x+x).join(""):h,16);
+  return `rgb(${Math.max(0,(n>>16)-amt)},${Math.max(0,((n>>8)&0xff)-amt)},${Math.max(0,(n&0xff)-amt)})`;
+}
+function openSheet(id) {
+  selectedId = id;
+  const c = data.find(x=>x.id===id);
+  if (!c) return;
+  document.getElementById("sh-hero").style.background = c.c;
+  document.getElementById("sh-nail").style.background = darken(c.c, 20);
+  document.getElementById("sh-num").innerHTML = '<span class="notranslate">No.' + c.n + '</span>';
+  document.getElementById("sh-tex").textContent = c.tex;
+  document.getElementById("sh-desc").textContent = c.desc;
+  const badge = document.getElementById("sh-badge");
+  if (c.status==="disc") { badge.textContent="廃番"; badge.style.background="var(--disc)"; }
+  else if (c.status==="new") { badge.textContent="新色"; badge.style.background="var(--new)"; }
+  else { badge.textContent=""; badge.style.background="transparent"; }
+  const stars = "★".repeat(c.stars||2)+"☆".repeat(4-(c.stars||2));
+  const doubleCoat = c.double ? "推奨" : "不要";
+  const doubleCoatColor = c.double ? "var(--new)" : "var(--text3)";
+  const hint = c.hint || '';
+  document.getElementById("sh-grid").innerHTML = `
+    <div class="detail-cell"><div class="detail-label">テクスチャー</div><div class="detail-val">${stars}<br><span style="font-size:11px;color:var(--text3)">${["やわらかい","中間","硬い","最も硬い"][(c.stars||2)-1]}</span></div></div>
+    <div class="detail-cell"><div class="detail-label">素材</div><div class="detail-val">${c.tex}</div></div>
+    <div class="detail-cell"><div class="detail-label">硬化不良リスク</div><div class="detail-val"><span style="padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;background:${cureLabel(c.cure).bg};color:${cureLabel(c.cure).color}">${cureLabel(c.cure).text}</span></div></div>
+    <div class="detail-cell"><div class="detail-label">ステータス</div><div class="detail-val" style="color:${c.status==="disc"?"var(--disc)":c.status==="new"?"var(--new)":"var(--new)"}">${c.status==="disc"?"廃番":c.status==="new"?"新色":"カラーチャート掲示中"}</div></div>
+    <div class="detail-cell" style="grid-column:1/-1"><div class="detail-label">2度塗り</div><div class="detail-val" style="color:${doubleCoatColor}">${doubleCoat}${c.double ? "（硬化不良防止のため推奨）" : "（1度塗りで十分）"}</div></div>
+    ${hint ? `<div class="detail-cell" style="grid-column:1/-1"><div class="detail-label">💡 こんな方に</div><div class="detail-val" style="color:var(--new);font-weight:500">${hint}</div></div>` : ''}`;
+  const actions = document.getElementById("sh-actions");
+  if (actions) {
+    if (c.status==="disc") {
+      actions.innerHTML = `<button class="btn-restore" onclick="restoreColor('${c.id}');closeSheet()">在庫に戻す</button><button class="btn-delete" onclick="deleteColorConfirm('${c.id}')">完全削除</button>`;
+    } else {
+      actions.innerHTML = `<button class="btn-disc" onclick="discColor('${c.id}');closeSheet()">廃番にする</button>`;
+    }
+  }
+  document.getElementById("sheet-bg").classList.add("open");
+}
+function closeSheet() { document.getElementById("sheet-bg").classList.remove("open"); }
+function maybeClose(e) { if(e.target.id==="sheet-bg") closeSheet(); }
+
+
+function renderManageLists() {
+  renderDiscByMonth();
+  renderSchedList();
+
+  // 月フィルターの選択肢を更新
+  const months = [...new Set(data.filter(c=>c.discMonth).map(c=>c.discMonth))].sort().reverse();
+  const sel = document.getElementById("disc-month-filter");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">すべて</option>` +
+    months.map(m=>`<option value="${m}"${m===cur?" selected":""}>${m}</option>`).join("");
+
+  // 新色リスト
+  const newItems = data.filter(c=>c.status==="new");
+  const newEl = document.getElementById("new-list");
+  newEl.innerHTML = newItems.length ? newItems.map(c=>`
+    <div class="mini-item">
+      <div class="mini-swatch" style="background:${c.c}"></div>
+      <div class="mini-info">
+        <div class="mini-num notranslate">No.${c.n}</div>
+        <div class="mini-desc">${c.desc}</div>
+      </div>
+      <div class="mini-action">
+        <button onclick="restoreColor('${c.id}')" style="padding:5px 12px;border:1px solid #EBEBEB;border-radius:8px;background:#F5F5F5;color:#666;font-size:12px;font-family:inherit;cursor:pointer">在庫に戻す</button>
+      </div>
+    </div>`).join("") : `<div class="empty-mini">登録された新色はありません</div>`;
+}
+
+function renderDiscByMonth() {
+  const filter = document.getElementById("disc-month-filter")?.value || "";
+  const discItems = data.filter(c => c.status==="disc" && (!filter || c.discMonth===filter));
+  const discEl = document.getElementById("disc-list");
+  discEl.innerHTML = discItems.length ? discItems.map(c=>`
+    <div class="mini-item">
+      <div class="mini-swatch" style="background:${c.c}"></div>
+      <div class="mini-info">
+        <div class="mini-num">No.${c.n} ${c.discMonth ? `<span style="font-size:10px;color:var(--text3);font-weight:400">${c.discMonth}</span>` : ""}</div>
+        <div class="mini-desc">${c.desc}</div>
+      </div>
+      <div class="mini-action">
+        <button onclick="restoreColor('${c.id}')">戻す</button>
+      </div>
+    </div>`).join("") : `<div class="empty-mini">該当する廃番カラーはありません</div>`;
+}
+
+function renderSchedList() {
+  const schedItems = data.filter(c => c.discSchedule);
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  const el = document.getElementById("sched-list");
+  el.innerHTML = schedItems.length ? schedItems.map(c => {
+    const isThisMonth = c.discSchedule && c.discSchedule.replace('-','/') === thisMonth;
+    const label = isThisMonth
+      ? `<span style="font-size:10px;font-weight:700;color:var(--disc);background:var(--disc-light);padding:2px 7px;border-radius:8px">今月廃番</span>`
+      : `<span style="font-size:10px;color:var(--text3)">${c.discSchedule.replace('-','/')}</span>`;
+    return `<div class="mini-item">
+      <div class="mini-swatch" style="background:${c.c}"></div>
+      <div class="mini-info">
+        <div class="mini-num" style="display:flex;align-items:center;gap:6px">No.${c.n} ${label}</div>
+        <div class="mini-desc">${c.desc}</div>
+      </div>
+      <div class="mini-action" style="display:flex;flex-direction:column;gap:4px">
+        <button onclick="execSchedule('${c.id}')" style="background:var(--disc-light);color:var(--disc);border-color:#F5C8C8">廃番実行</button>
+        <button onclick="cancelSchedule('${c.id}')">取消</button>
+      </div>
+    </div>`;
+  }).join("") : `<div class="empty-mini">廃番予定はありません</div>`;
+}
+function editSearch() {
+  const num = document.getElementById("edit-search").value.trim();
+  const result = document.getElementById("edit-result");
+  if (!num) { result.style.display = "none"; editId = null; return; }
+  const c = data.find(x => x.n === num);
+  if (!c) { result.style.display = "none"; editId = null; return; }
+  editId = c.id;
+  document.getElementById("edit-swatch").style.background = c.c;
+  document.getElementById("edit-label").textContent = `No.${c.n}　${c.desc}`;
+  document.getElementById("edit-desc").value = c.desc;
+  document.getElementById("edit-tex").value = c.tex;
+  document.getElementById("edit-color").value = c.c;
+  document.getElementById("edit-stars").value = String(c.stars || 2);
+  document.getElementById("edit-cure").value = c.cure || "△";
+  document.getElementById("edit-double").value = c.double ? "1" : "0";
+  document.getElementById("edit-category").value = c.category || "";
+  document.getElementById("edit-hint").value = c.hint || "";
+  result.style.display = "block";
+}
+
+function saveEdit() {
+  if (!editId) return;
+  const c = data.find(x => x.id === editId);
+  if (!c) return;
+  c.desc  = document.getElementById("edit-desc").value.trim() || c.desc;
+  c.tex   = document.getElementById("edit-tex").value;
+  c.c     = document.getElementById("edit-color").value;
+  c.stars = parseInt(document.getElementById("edit-stars").value);
+  c.cure   = document.getElementById("edit-cure").value;
+  c.double   = document.getElementById("edit-double").value === "1";
+  c.category = document.getElementById("edit-category").value || undefined;
+  const hintVal = document.getElementById("edit-hint").value.trim();
+  if (hintVal) c.hint = hintVal; else delete c.hint;
+  // スウォッチ更新
+  document.getElementById("edit-swatch").style.background = c.c;
+  document.getElementById("edit-label").textContent = `No.${c.n}　${c.desc}`;
+  save(); renderAll();
+  alert(`No.${c.n} を更新しました`);
+}
+function markDisc() {
+  const num = document.getElementById("disc-num").value.trim();
+  const schedMonth = document.getElementById("disc-sched").value;
+  if (!num) { alert("番号を入力してください"); return; }
+  const c = data.find(x=>x.n===num);
+  if (!c) { alert(`No.${num} が見つかりません`); return; }
+  if (c.status==="disc") { alert(`No.${num} はすでに廃番です`); return; }
+
+  if (schedMonth) {
+    // 予定月登録（まだ廃番にはしない）
+    c.discSchedule = schedMonth;
+    save(); renderAll();
+    document.getElementById("disc-num").value = "";
+    document.getElementById("disc-sched").value = "";
+    alert(`No.${num} の廃番予定を ${schedMonth} に登録しました`);
+  } else {
+    // 即廃番（今月を記録）
+    const now = new Date();
+    c.status = "disc";
+    c.discMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+    c.discSchedule = null;
+    save(); renderAll();
+    document.getElementById("disc-num").value = "";
+    alert(`No.${num} を廃番にしました（${c.discMonth}）`);
+  }
+}
+
+function addNew() {
+  const num = document.getElementById("new-num").value.trim();
+  const col = document.getElementById("new-color").value;
+  const tex = document.getElementById("new-tex").value;
+  const desc = document.getElementById("new-desc").value.trim() || "新色";
+  const stars = parseInt(document.getElementById("new-stars").value) || 2;
+  const dbl = document.getElementById("new-double").value === "1";
+  if (!num) { alert("番号を入力してください"); return; }
+  if (data.find(c=>c.n===num)) { alert(`No.${num} はすでに存在します`); return; }
+  const cat = document.getElementById("new-category").value || undefined;
+  data.push({ id:num, n:num, c:col, tex, desc, status:"new", stars, cure:"△", double: dbl, category: cat });
+  save(); renderAll();
+  document.getElementById("new-num").value = "";
+  document.getElementById("new-desc").value = "";
+  alert(`No.${num} を新色として追加しました`);
+}
+
+async function loadPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) { console.log('No file selected'); return; }
+  console.log('Uploading:', file.name, file.type, file.size);
+  try {
+    const url = await uploadPhoto(file);
+    console.log('Upload success:', url);
+    // 全ての写真表示箇所を更新
+    showPhotoFromUrl(url);
+    // photo-img が複数ある場合も全部更新
+    document.querySelectorAll('#photo-img').forEach(img => { img.src = url; });
+    // アップロードカードを非表示・コンテナ表示
+    document.querySelectorAll('#photo-upload-card').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('#photo-container').forEach(el => el.style.display = 'block');
+    document.querySelectorAll('#photo-reupload').forEach(el => el.style.display = 'block');
+    showToast('✅ 写真をアップロードしました');
+  } catch(e) {
+    console.error('Upload error:', e);
+    showToast('⚠️ 失敗: ' + e.message);
+  }
+}
+function showPhotoFromUrl(url) {
+  if (!url) return;
+  // IDで取得（単一要素）
+  const uploadCard = document.getElementById("photo-upload-card");
+  const photoImg   = document.getElementById("photo-img");
+  const container  = document.getElementById("photo-container");
+  const reupload   = document.getElementById("photo-reupload");
+  if (uploadCard) uploadCard.style.display = "none";
+  if (photoImg)   photoImg.src = url;
+  if (container)  container.style.display = "block";
+  if (reupload)   reupload.style.display = "block";
+}
+
+
+let findImgEl = null;
+function findColors(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById("find-preview-img");
+    img.src = e.target.result;
+    img.onload = () => {
+      document.getElementById("find-upload-area").style.display = "none";
+      document.getElementById("find-preview-wrap").style.display = "block";
+      document.getElementById("find-explain").style.display = "none";
+      document.getElementById("find-sample-wrap").style.display = "none";
+      document.getElementById("find-results").style.display = "none";
+      findImgEl = img; img.onclick = onFindTap; img.style.cursor = "crosshair";
+    };
+  };
+  reader.readAsDataURL(file);
+}
+function onFindTap(e) {
+  const img = findImgEl;
+  const rect = img.getBoundingClientRect();
+  const tapX = (e.clientX-rect.left)*(img.naturalWidth/rect.width);
+  const tapY = (e.clientY-rect.top)*(img.naturalHeight/rect.height);
+  const canvas = document.getElementById("find-canvas");
+  canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
+  const ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0);
+  const r=10, x0=Math.max(0,tapX-r), y0=Math.max(0,tapY-r);
+  const x1=Math.min(img.naturalWidth-1,tapX+r), y1=Math.min(img.naturalHeight-1,tapY+r);
+  const px=ctx.getImageData(x0,y0,x1-x0||1,y1-y0||1).data;
+  let rv=[],gv=[],bv=[];
+  for(let i=0;i<px.length;i+=4){rv.push(px[i]);gv.push(px[i+1]);bv.push(px[i+2]);}
+  rv.sort((a,b)=>a-b);gv.sort((a,b)=>a-b);bv.sort((a,b)=>a-b);
+  const mid=Math.floor(rv.length/2), sR=rv[mid],sG=gv[mid],sB=bv[mid];
+  const hex=`#${sR.toString(16).padStart(2,'0')}${sG.toString(16).padStart(2,'0')}${sB.toString(16).padStart(2,'0')}`;
+  const cursor=document.getElementById("find-cursor");
+  cursor.style.cssText=`display:block;position:absolute;left:${(tapX/img.naturalWidth)*rect.width}px;top:${(tapY/img.naturalHeight)*rect.height}px;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);transform:translate(-50%,-50%);pointer-events:none;background:${hex}`;
+  document.getElementById("find-sample-swatch").style.background=hex;
+  document.getElementById("find-sample-hex").textContent=hex.toUpperCase()+` (R:${sR} G:${sG} B:${sB})`;
+  document.getElementById("find-sample-wrap").style.display="block";
+  const active=data.filter(c=>c.status!=="disc");
+  const scored=active.map(c=>{
+    const h=c.c.replace("#","");
+    const r2=parseInt(h.substr(0,2),16),g2=parseInt(h.substr(2,2),16),b2=parseInt(h.substr(4,2),16);
+    return {...c,diff:Math.sqrt(0.3*(sR-r2)**2+0.59*(sG-g2)**2+0.11*(sB-b2)**2)};
+  }).sort((a,b)=>a.diff-b.diff).slice(0,3);
+  const maxDiff=scored[scored.length-1]?.diff||1;
+  document.getElementById("find-result-list").innerHTML=scored.map((c,i)=>{
+    const pct=Math.round((1-c.diff/255)*100);
+    const barW=Math.round((1-c.diff/maxDiff)*100);
+    return `<div class="result-card" onclick="openSheet('${c.id}')">
+      <div class="result-rank">${i+1}</div>
+      <div class="result-nail" style="background:${c.c}"></div>
+      <div class="result-info">
+        <div class="result-num notranslate">No.${c.n} <span style="font-size:11px;font-weight:400;color:var(--text3)">${c.tex}</span></div>
+        <div class="result-desc">${c.desc}</div>
+        <div class="result-diff"><span style="font-size:10px;color:var(--text3)">一致度 ${pct}%</span>
+        <div class="diff-bar-wrap"><div class="diff-bar" style="width:${barW}%"></div></div></div>
+      </div></div>`;
+  }).join("");
+  document.getElementById("find-results").style.display="block";
+  document.getElementById("find-tap-hint").textContent="📍 別の部分をタップして再検索";
+}
+
+
+function showToast(msg) {
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2500);
+}
+function showLoading(msg='処理中...') {
+  document.getElementById("loading-msg").textContent=msg;
+  document.getElementById("loading").classList.add("show");
+}
+function hideLoading() { document.getElementById("loading").classList.remove("show"); }
+
+function goPage(name) {
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("page-"+name).classList.add("active");
+  document.getElementById("nav-"+name).classList.add("active");
+}
+function renderAll() { renderStats(); renderFilters(); renderList(); renderManageLists(); }
+document.getElementById("search").addEventListener("input", e=>{ searchQ=e.target.value; renderList(); });
+
+async function init() {
+  document.getElementById("loading").classList.add("show");
+  await loadData();
+  renderAll();
+  const photoUrl = await loadPhotoUrl();
+  if (photoUrl) showPhotoFromUrl(photoUrl);
+  hideLoading();
+}
+init();
+
+
+// ===== 自動更新（30秒ごとにSupabaseからデータ取得） =====
+let lastUpdatedAt = null;
+
+async function checkForUpdates() {
+  if (location.protocol === 'file:') return;
+  try {
+    const r = await sbGet('/rest/v1/nail_colors?id=eq.main&select=updated_at');
+    const rows = await r.json();
+    if (!rows || !rows[0]) return;
+    const serverTime = rows[0].updated_at;
+    if (lastUpdatedAt && serverTime !== lastUpdatedAt) {
+      // データが更新されていたら再読み込み
+      await loadData();
+      renderAll();
+      // 写真URLも更新確認
+      const photoUrl = await loadPhotoUrl();
+      if (photoUrl) showPhotoFromUrl(photoUrl);
+      showToast('🔄 データを更新しました');
+    }
+    lastUpdatedAt = serverTime;
+  } catch(e) {}
+}
+
+function startAutoRefresh() {
+  // 初回のupdated_atを記録
+  if (location.protocol !== 'file:') {
+    sbGet('/rest/v1/nail_colors?id=eq.main&select=updated_at')
+      .then(r => r.json())
+      .then(rows => { if (rows && rows[0]) lastUpdatedAt = rows[0].updated_at; })
+      .catch(() => {});
+  }
+  // 30秒ごとに更新チェック
+  setInterval(checkForUpdates, 30000);
+}
+
+// ===== パスワード認証 =====
+const ADMIN_PW = "nicecolor7531!";
+const SESSION_KEY = "nn_admin_session";
+let isAdminMode = false;
+
+function pwSwitchTab(tab) {
+  document.getElementById("pw-tab-view").classList.toggle("active", tab==="view");
+  document.getElementById("pw-tab-admin").classList.toggle("active", tab==="admin");
+  document.getElementById("pw-admin-section").style.display = tab==="admin" ? "block" : "none";
+  document.getElementById("pw-enter-btn").textContent = tab==="admin" ? "ログイン" : "入る";
+}
+
+function pwEnter() {
+  const tab = document.getElementById("pw-tab-admin").classList.contains("active") ? "admin" : "view";
+  if (tab === "admin") {
+    pwLogin();
+  } else {
+    // 閲覧モード：管理機能を非表示にして入る
+    enterViewerMode();
+  }
+}
+
+function pwLogin() {
+  const pw = document.getElementById("pw-input").value;
+  if (pw === ADMIN_PW) {
+    sessionStorage.setItem(SESSION_KEY, "1");
+    document.getElementById("pw-error").style.display = "none";
+    enterAdminMode();
+  } else {
+    document.getElementById("pw-error").style.display = "block";
+    document.getElementById("pw-input").value = "";
+    document.getElementById("pw-input").focus();
+  }
+}
+
+function enterAdminMode() {
+  isAdminMode = true;
+  document.getElementById("pw-screen").classList.add("hidden");
+  document.getElementById("admin-badge").classList.add("show");
+  // 管理タブを表示
+  const adminNav = document.getElementById("nav-manage");
+  if (adminNav) adminNav.style.display = "flex";
+  const adminPhoto = document.getElementById("nav-photo");
+  if (adminPhoto) adminPhoto.style.display = "flex";
+  // 詳細シートの管理アクション表示
+  document.documentElement.classList.add("admin-mode");
+}
+
+function enterViewerMode() {
+  isAdminMode = false;
+  document.getElementById("pw-screen").classList.add("hidden");
+  // 管理タブのみ非表示（写真タブは閲覧でも表示）
+  const adminNav = document.getElementById("nav-manage");
+  if (adminNav) adminNav.style.display = "none";
+  // 詳細シートのアクションボタンを非表示
+  document.documentElement.classList.remove("admin-mode");
+}
+
+// 管理モード時のみアクションボタンを表示するCSS
+const adminStyle = document.createElement('style');
+adminStyle.textContent = `
+  #sh-actions { display: none; }
+  .admin-mode #sh-actions { display: flex; }
+  .add-form-wrap { display: none; }
+  .admin-mode .add-form-wrap { display: block; }
+`;
+document.head.appendChild(adminStyle);
+
+// セッション確認（ページリロード時も維持）
+if (sessionStorage.getItem(SESSION_KEY) === "1") {
+  window.addEventListener('load', () => {
+    // セッションあれば管理モードで自動ログイン
+  });
+}
+
+
+// save後に自動でrenderAll
+const _origSave = save;
+save = async function() {
+  await _origSave();
+  if (typeof renderAll === 'function') renderAll();
+};
+
+// init後にパスワード画面を表示
+const _origInit = init;
+init = async function() {
+  await _origInit();
+  // 初期状態：管理タブのみ非表示（写真は閲覧でも使える）
+  const adminNav = document.getElementById("nav-manage");
+  if (adminNav) adminNav.style.display = "none";
+  // 自動更新開始
+  startAutoRefresh();
+};
+</script>
+</body>
+</html>
