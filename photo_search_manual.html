@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「写真から色を探す」使い方マニュアル | NICENAIL</title>
+<style>
+  :root{
+    --bg:#faf7f2; --card:#ffffff; --border:#e8e0d5;
+    --text:#2b2621; --text2:#6b6055; --text3:#a39586;
+    --accent:#c98a5c; --accent-dark:#a56c42; --accent-soft:#f3e2d0;
+    --blue:#4f6b9e; --blue-soft:#e8edf7;
+    --purple:#7a5a9e; --purple-soft:#efe6f7;
+    --amber:#a5762a; --amber-soft:#fbf0dc;
+    --r:16px; --r-sm:10px;
+  }
+  * { box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; font-family:"Hiragino Sans","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.75;
+  }
+  .wrap{ max-width:860px; margin:0 auto; padding:0 24px 100px; }
+
+  /* ---- ヒーロー ---- */
+  .hero{
+    background:linear-gradient(160deg, #fff 0%, var(--accent-soft) 100%);
+    border-bottom:1px solid var(--border);
+    padding:56px 24px 44px;
+    text-align:center;
+  }
+  .hero-eyebrow{
+    font-size:12px; font-weight:700; letter-spacing:0.18em; color:var(--accent-dark);
+    text-transform:uppercase; margin-bottom:14px;
+  }
+  .hero h1{
+    font-size:clamp(26px,4vw,38px); font-weight:800; margin:0 0 14px; color:var(--text);
+    letter-spacing:-0.01em;
+  }
+  .hero p{ font-size:15px; color:var(--text2); max-width:520px; margin:0 auto; }
+  .hero-icon-row{ display:flex; justify-content:center; gap:18px; margin-top:28px; }
+  .hero-icon{
+    width:56px; height:56px; border-radius:50%; background:#fff; border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  /* ---- 目次 ---- */
+  .toc{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+    padding:22px 26px; margin:-30px 0 40px; position:relative; z-index:2;
+    box-shadow:0 4px 20px rgba(0,0,0,0.05);
+  }
+  .toc-title{ font-size:13px; font-weight:700; color:var(--text3); letter-spacing:0.1em; margin-bottom:12px; }
+  .toc ol{ margin:0; padding-left:0; list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; }
+  .toc a{
+    color:var(--text); text-decoration:none; font-size:14px; font-weight:500;
+    display:flex; gap:8px; align-items:baseline;
+  }
+  .toc a:hover{ color:var(--accent-dark); }
+  .toc .num{ color:var(--accent); font-weight:700; font-size:12px; }
+
+  /* ---- セクション共通 ---- */
+  section{ margin:56px 0; scroll-margin-top:24px; }
+  .section-head{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .section-badge{
+    width:34px; height:34px; border-radius:10px; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800;
+    flex-shrink:0;
+  }
+  h2{ font-size:21px; font-weight:800; margin:0; color:var(--text); }
+  h3{ font-size:15px; font-weight:700; color:var(--text); margin:28px 0 10px; }
+  p{ font-size:14.5px; color:var(--text2); margin:0 0 14px; }
+  strong{ color:var(--text); font-weight:700; }
+
+  /* ---- ステップカード ---- */
+  .steps{ display:flex; flex-direction:column; gap:14px; }
+  .step{
+    display:flex; gap:16px; background:var(--card); border:1px solid var(--border);
+    border-radius:var(--r); padding:18px 20px;
+  }
+  .step-num{
+    width:30px; height:30px; border-radius:50%; background:var(--accent-soft); color:var(--accent-dark);
+    font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .step-body{ flex:1; }
+  .step-title{ font-weight:700; font-size:14.5px; color:var(--text); margin-bottom:4px; }
+  .step-desc{ font-size:13.5px; color:var(--text2); }
+
+  /* ---- モック画面(写真の代わり) ---- */
+  .mock{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+    padding:0; overflow:hidden; margin:18px 0 26px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  }
+  .mock-bar{ background:#f4efe8; padding:10px 16px; font-size:11px; color:var(--text3); border-bottom:1px solid var(--border); }
+  .mock-photo{
+    height:150px; background:
+      linear-gradient(135deg,#e9c9b0 0%,#d9a184 40%, #cf8d6e 100%);
+    position:relative; display:flex; align-items:center; justify-content:center;
+  }
+  .mock-photo .marker{
+    width:26px; height:26px; border-radius:50%; border:3px solid #fff;
+    background:#a9765a; box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
+  .mock-hint{
+    position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.5); color:#fff;
+    font-size:11px; padding:6px; text-align:center;
+  }
+  .mock-results{ padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .mock-result{
+    display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:8px; padding:8px 10px;
+  }
+  .mock-result .rank{
+    width:18px; height:18px; border-radius:50%; background:var(--text); color:#fff; font-size:10px;
+    display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;
+  }
+  .mock-swatch{ width:24px; height:24px; border-radius:6px; flex-shrink:0; }
+  .mock-result .info{ font-size:12px; }
+  .mock-result .info .no{ font-weight:700; color:var(--text); }
+  .mock-result .info .lv{ color:var(--text3); font-size:11px; }
+
+  /* ---- コールアウトボックス ---- */
+  .callout{
+    border-radius:var(--r-sm); padding:14px 18px; margin:16px 0; font-size:13.5px;
+    display:flex; gap:12px; align-items:flex-start; line-height:1.7;
+  }
+  .callout .ic{ font-size:18px; flex-shrink:0; margin-top:1px; }
+  .callout-tip{ background:var(--blue-soft); color:#2c3f66; }
+  .callout-warn{ background:var(--amber-soft); color:#6b4a12; }
+  .callout-note{ background:var(--purple-soft); color:#4a3266; }
+  .callout b{ color:inherit; }
+
+  /* ---- 質感バッジ ---- */
+  .tex-row{ display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 20px; }
+  .tex-chip{
+    padding:6px 14px; border-radius:50px; border:1px solid var(--border); background:var(--card);
+    font-size:12.5px; color:var(--text2);
+  }
+
+  /* ---- 表 ---- */
+  table{ width:100%; border-collapse:collapse; margin:16px 0 24px; font-size:13.5px; }
+  th{ text-align:left; padding:10px 12px; background:#f4efe8; color:var(--text3); font-weight:700; font-size:12px; }
+  td{ padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text2); }
+  tr:last-child td{ border-bottom:none; }
+  .lv-badge{ font-weight:700; }
+  .lv-high{ color:var(--accent-dark); }
+  .lv-mid{ color:var(--text2); }
+  .lv-low{ color:var(--text3); }
+
+  /* ---- FAQ ---- */
+  details{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r-sm);
+    padding:14px 18px; margin-bottom:10px;
+  }
+  summary{ font-weight:700; font-size:14px; cursor:pointer; color:var(--text); list-style:none; }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{ content:"Q. "; color:var(--accent); }
+  details p{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); }
+
+  /* ---- フッター ---- */
+  .footer-note{
+    text-align:center; font-size:12px; color:var(--text3); margin-top:70px; padding-top:24px;
+    border-top:1px solid var(--border);
+  }
+
+  @media (max-width:600px){
+    .toc ol{ grid-template-columns:1fr; }
+    .hero{ padding:44px 20px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">NICENAIL カラー管理 スタッフマニュアル</div>
+  <h1>「写真から色を探す」<br>機能の使い方</h1>
+  <p>お客様が持参した写真から、チャートにある近い色を見つけるための機能です。特に経験の浅いスタッフが、判断に迷う色をスムーズに絞り込めるように作られています。</p>
+  <div class="hero-icon-row">
+    <div class="hero-icon">📷</div>
+    <div class="hero-icon">👆</div>
+    <div class="hero-icon">🎨</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="toc">
+    <div class="toc-title">このページの内容</div>
+    <ol>
+      <li><a href="#purpose"><span class="num">01</span> この機能の目的</a></li>
+      <li><a href="#steps"><span class="num">02</span> 基本の使い方</a></li>
+      <li><a href="#results"><span class="num">03</span> 結果の見方</a></li>
+      <li><a href="#texture"><span class="num">04</span> 質感の自動検出と絞り込み</a></li>
+      <li><a href="#tips"><span class="num">05</span> 精度を上げるコツ</a></li>
+      <li><a href="#limits"><span class="num">06</span> できないこと・注意点</a></li>
+      <li><a href="#faq"><span class="num">07</span> よくある質問</a></li>
+    </ol>
+  </div>
+
+  <!-- 01 目的 -->
+  <section id="purpose">
+    <div class="section-head"><div class="section-badge">01</div><h2>この機能の目的</h2></div>
+    <p>
+      お客様が「こんな感じの色にしたい」と写真を見せてくださることはよくありますが、<strong>写真の色とチャートの色番号を照らし合わせるのは、経験がないと意外と難しい</strong>作業です。特にくすみ系・シアー系・ラメ系は、ベテランでも判断に迷うことがあります。
+    </p>
+    <p>
+      この機能は、<strong>「正解を機械的に決める」ものではなく、「候補を絞り込んで、最終判断をしやすくする」ための道具</strong>です。あくまで判断のサポートであり、最終的な色の確認は必ず目で行ってください。
+    </p>
+    <div class="callout callout-note">
+      <div class="ic">💡</div>
+      <div>特に新人スタッフの方は、まずこの機能で候補を3つに絞り込み、そこから先輩スタッフと一緒に実物のチップと見比べる、という使い方がおすすめです。</div>
+    </div>
+  </section>
+
+  <!-- 02 基本の使い方 -->
+  <section id="steps">
+    <div class="section-head"><div class="section-badge">02</div><h2>基本の使い方</h2></div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">「カラー検索」ページを開く</div>
+          <div class="step-desc">画面下のナビゲーションから「カラー検索」をタップします。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">お客様の写真をアップロードする</div>
+          <div class="step-desc">「写真を選ぶ」から、お客様に見せてもらった写真（保存済みの画像やその場で撮影した写真）を選択します。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">確認したい部分をタップする</div>
+          <div class="step-desc">写真の中で、色を確認したいネイル部分を指またはマウスでタップします。ラメが均一に入っている部分や、ハイライト（光の反射）を避けた場所がおすすめです。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">近い色（最大3色）を確認する</div>
+          <div class="step-desc">タップした場所に近い色番号が、最大3件表示されます。番号をタップすると詳細画面に移動します。</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>ワンポイント：拡大・移動もできます</h3>
+    <p>
+      写真が小さくて細かい部分をタップしづらいときは、<strong>2本指のピンチ操作（スマホ）</strong>または<strong>マウスホイール（PC）</strong>で拡大できます。拡大した状態では、指やマウスのドラッグで表示位置を動かせます。ダブルタップ／ダブルクリックで元の大きさに戻ります。
+    </p>
+
+    <div class="mock">
+      <div class="mock-bar">画面イメージ（例）</div>
+      <div class="mock-photo">
+        <div class="marker"></div>
+        <div class="mock-hint">📍 写真の色を確認したい部分をタップ</div>
+      </div>
+      <div class="mock-results">
+        <div class="mock-result">
+          <div class="rank">1</div>
+          <div class="mock-swatch" style="background:#a9765a"></div>
+          <div class="info"><span class="no">No.94</span> <span class="lv">かなり近い</span></div>
+        </div>
+        <div class="mock-result">
+          <div class="rank">2</div>
+          <div class="mock-swatch" style="background:#bf9179"></div>
+          <div class="info"><span class="no">No.48</span> <span class="lv">近い</span></div>
+        </div>
+        <div class="mock-result">
+          <div class="rank">3</div>
+          <div class="mock-swatch" style="background:#c79b82"></div>
+          <div class="info"><span class="no">No.9</span> <span class="lv">やや近い</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 結果の見方 -->
+  <section id="results">
+    <div class="section-head"><div class="section-badge">03</div><h2>結果の見方</h2></div>
+    <p>
+      結果には具体的な「一致度◯%」のような数字は表示されません。数字が出ると「これが正解」という誤った安心感につながりやすいため、あえて<strong>大まかな目安の言葉</strong>で表示しています。
+    </p>
+
+    <table>
+      <thead><tr><th>表示</th><th>目安</th></tr></thead>
+      <tbody>
+        <tr><td class="lv-badge lv-high">かなり近い</td><td>色の差がほとんど無いレベル。有力な候補です。</td></tr>
+        <tr><td class="lv-badge lv-mid">近い</td><td>近い色ですが、実物で最終確認することをおすすめします。</td></tr>
+        <tr><td class="lv-badge lv-mid">やや近い</td><td>方向性は近いものの、差を感じる可能性があります。</td></tr>
+        <tr><td class="lv-badge lv-low">参考程度</td><td>あくまで参考です。他の候補と見比べてください。</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warn">
+      <div class="ic">⚠️</div>
+      <div>
+        <b>「チャートに近い色が見つかりませんでした」と出た場合</b><br>
+        一番近い候補ですら色の差が大きい場合に表示されます。これは<strong>お客様の写真の色が、そもそもチャートに無い色である可能性</strong>を示しています。無理に近い色を勧めず、その旨をお客様にお伝えください。
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 質感 -->
+  <section id="texture">
+    <div class="section-head"><div class="section-badge">04</div><h2>質感の自動検出と絞り込み</h2></div>
+    <p>
+      色そのものだけでなく、質感（マット・パール・シアー・グリッター）も候補の精度に影響します。この機能では、以下の2つの方法で質感を扱っています。
+    </p>
+
+    <h3>自動で気づいてくれるもの</h3>
+    <div class="tex-row">
+      <span class="tex-chip">✨ ラメ・グリッターの可能性</span>
+      <span class="tex-chip">🌈 オーロラ・ホログラムの可能性</span>
+    </div>
+    <p>
+      タップした部分に細かい粒の反射や、虹色に色が変化するような特徴がある場合、上記のようなヒントが自動的に表示され、該当する質感の色が優先的に候補へ引き上げられます。ただしこれはあくまで目安で、完全な判定ではありません。
+    </p>
+
+    <h3>自分の目で絞り込むもの</h3>
+    <p>
+      <strong>シアー（透け感）は自動判定が非常に困難</strong>です。お客様の地爪の色が透けて混ざって見えるため、写真の色だけでは「もともとシアーな色なのか」を機械的に区別できません。
+    </p>
+    <p>
+      そのため、質感がひと目で分かる場合は、サンプル色の下にある<strong>「マット／パール／シアー／グリッター・ラメ」ボタン</strong>で絞り込んでください。同じタップ位置のまま、その質感の色だけに絞って再検索されます。
+    </p>
+  </section>
+
+  <!-- 05 コツ -->
+  <section id="tips">
+    <div class="section-head"><div class="section-badge">05</div><h2>精度を上げるコツ</h2></div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">✓</div>
+        <div class="step-body">
+          <div class="step-title">光の反射（ハイライト）が無い部分を選ぶ</div>
+          <div class="step-desc">爪の中央付近など、白く光っていない場所をタップすると、より正確な色が拾えます。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">✓</div>
+        <div class="step-body">
+          <div class="step-title">同じ写真で2〜3箇所タップしてみる</div>
+          <div class="step-desc">1回で判断せず、爪の違う位置を何度かタップして、候補の傾向を見比べてください。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">✓</div>
+        <div class="step-body">
+          <div class="step-title">質感が分かるなら絞り込みボタンを使う</div>
+          <div class="step-desc">見た目で「マットっぽい」「グリッターっぽい」と分かる場合は、絞り込みボタンを使うと精度が上がります。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">✓</div>
+        <div class="step-body">
+          <div class="step-title">最後は必ず実物で確認する</div>
+          <div class="step-desc">候補はあくまで参考です。可能であれば実際のチップとお客様の写真を並べて見比べましょう。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 できないこと -->
+  <section id="limits">
+    <div class="section-head"><div class="section-badge">06</div><h2>できないこと・正直な注意点</h2></div>
+    <p>この機能にも限界があります。スタッフ全員が正しく理解しておくことで、お客様への説明もスムーズになります。</p>
+
+    <div class="callout callout-warn">
+      <div class="ic">🚫</div>
+      <div><b>チャートに無い色は、当然見つけられません。</b>近い色が無理やり提案されているように見えても、実際には「チャートに存在しない色」であるケースが十分にあります。</div>
+    </div>
+    <div class="callout callout-warn">
+      <div class="ic">🚫</div>
+      <div><b>シアー（透け感）は精度が低いです。</b>お客様の地爪の色が写真ごとに違うため、機械的な判定には向いていません。目で見て判断してください。</div>
+    </div>
+    <div class="callout callout-warn">
+      <div class="ic">🚫</div>
+      <div><b>オーロラ・ホロは「色番号」までは特定できません。</b>「オーロラっぽい」という気づきは得られますが、数あるオーロラ系の中でどれが一番近いかまでは断定できません。</div>
+    </div>
+  </section>
+
+  <!-- 07 FAQ -->
+  <section id="faq">
+    <div class="section-head"><div class="section-badge">07</div><h2>よくある質問</h2></div>
+
+    <details>
+      <summary>タップしても何も反応しません</summary>
+      <p>写真の外側（グレーの余白部分）をタップしていないか確認してください。余白をタップした場合は「写真の枠の外です」というメッセージが表示されます。写真の中央付近をタップし直してみてください。</p>
+    </details>
+    <details>
+      <summary>写真が小さくて細かい場所をタップできません</summary>
+      <p>2本指のピンチ操作（スマホ）またはマウスホイール（PC）で拡大できます。拡大後はドラッグで見たい場所に移動できます。</p>
+    </details>
+    <details>
+      <summary>マーカー（丸いしるし）の位置と、実際にタップした場所がズレて見えます</summary>
+      <p>写真を再読み込みしてから、もう一度タップしてみてください。それでも改善しない場合は、担当者に共有してください。</p>
+    </details>
+    <details>
+      <summary>候補が3色とも違う色に見えます</summary>
+      <p>チャートに無い色を試している可能性があります。また、光の反射や影の部分をタップすると誤差が出やすいので、爪の中央あたりで再度タップしてみてください。質感の絞り込みボタンも試してみてください。</p>
+    </details>
+    <details>
+      <summary>結果に「かなり近い」と出ても、実物と少し違う気がします</summary>
+      <p>写真の照明環境（暖色照明・日光・フラッシュなど）によって、色の見え方は変わります。この機能はあくまで候補を絞り込むための道具なので、最終確認は必ず実物のチップで行ってください。</p>
+    </details>
+  </section>
+
+  <div class="footer-note">
+    NICENAIL カラー管理システム ・ 内部スタッフ向けマニュアル
+  </div>
+
+</div>
+</body>
+</html>
