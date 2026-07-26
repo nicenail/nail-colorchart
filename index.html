@@ -8,6 +8,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google" content="notranslate">
 <title>NICENAIL カラー管理</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 
@@ -437,7 +441,8 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   border-radius: 16px; padding: 32px 24px;
   width: 90%; max-width: 340px; text-align: center;
 }
-.pw-logo { font-size: 32px; margin-bottom: 12px; }
+.pw-logo { margin-bottom: 12px; }
+.pw-logo img { height: 56px; width: auto; max-width: 80%; display: block; margin: 0 auto; }
 .pw-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
 .pw-sub { font-size: 12px; color: var(--text3); margin-bottom: 24px; }
 .pw-tabs {
@@ -483,7 +488,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 <!-- パスワード画面 -->
 <div id="pw-screen">
   <div class="pw-card">
-    <div class="pw-logo" id="pw-logo" onclick="pwLogoTap()">💅</div>
+    <div class="pw-logo" id="pw-logo" onclick="pwLogoTap()"><img src="logo.png" alt="NICENAIL"></div>
     <div class="pw-title">NICENAIL カラー管理</div>
     <div class="pw-tabs" id="pw-tabs" style="display:none">
       <button class="pw-tab active" id="pw-tab-view" onclick="pwSwitchTab('view')">閲覧</button>
