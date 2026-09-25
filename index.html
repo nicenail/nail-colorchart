@@ -1506,18 +1506,27 @@ function openSheet(id) {
   document.getElementById("sh-tex").textContent = c.tex;
   document.getElementById("sh-desc").textContent = c.desc;
   const badge = document.getElementById("sh-badge");
-  if (c.status==="disc") { badge.textContent="廃番"; badge.style.background="var(--disc)"; }
-  else if (c.status==="new") { badge.textContent="新色"; badge.style.background="var(--new)"; }
-  else { badge.textContent=""; badge.style.background="transparent"; }
+  if (c.status==="disc") { badge.textContent="廃番"; badge.style.background="var(--disc)"; badge.style.color="#fff"; badge.style.border="none"; }
+  else if (c.status==="new") { badge.textContent="新色"; badge.style.background="var(--new)"; badge.style.color="#fff"; badge.style.border="none"; }
+  else if (c.discSchedule) { badge.textContent="廃番予定 "+c.discSchedule.replace('-','/'); badge.style.background="#fff"; badge.style.color="var(--disc)"; badge.style.border="1.5px solid var(--disc)"; }
+  else if (c.newSchedule) { badge.textContent="新色予定 "+c.newSchedule.replace('-','/'); badge.style.background="#fff"; badge.style.color="var(--new)"; badge.style.border="1.5px solid var(--new)"; }
+  else { badge.textContent=""; badge.style.background="transparent"; badge.style.border="none"; }
   const stars = "★".repeat(c.stars||2)+"☆".repeat(4-(c.stars||2));
   const doubleCoat = c.double ? "推奨" : "不要";
   const doubleCoatColor = c.double ? "var(--new)" : "var(--text3)";
   const hint = c.hint || '';
+  // ステータス欄：廃番／新色／廃番予定／新色予定／通常掲示中 を判定
+  let statusText, statusColor;
+  if (c.status==="disc") { statusText="廃番"; statusColor="var(--disc)"; }
+  else if (c.status==="new") { statusText="新色"; statusColor="var(--new)"; }
+  else if (c.discSchedule) { statusText="廃番予定（"+c.discSchedule.replace('-','/')+"）"; statusColor="var(--disc)"; }
+  else if (c.newSchedule) { statusText="新色予定（"+c.newSchedule.replace('-','/')+"）"; statusColor="var(--new)"; }
+  else { statusText="カラーチャート掲示中"; statusColor="var(--new)"; }
   document.getElementById("sh-grid").innerHTML = `
     <div class="detail-cell"><div class="detail-label">テクスチャー</div><div class="detail-val">${stars}<br><span style="font-size:11px;color:var(--text3)">${["やわらかい","中間","硬い","最も硬い"][(c.stars||2)-1]}</span></div></div>
     <div class="detail-cell"><div class="detail-label">素材</div><div class="detail-val">${c.tex}</div></div>
     <div class="detail-cell"><div class="detail-label">硬化不良リスク</div><div class="detail-val"><span style="padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;background:${cureLabel(c.cure).bg};color:${cureLabel(c.cure).color}">${cureLabel(c.cure).text}</span></div></div>
-    <div class="detail-cell"><div class="detail-label">ステータス</div><div class="detail-val" style="color:${c.status==="disc"?"var(--disc)":c.status==="new"?"var(--new)":"var(--new)"}">${c.status==="disc"?"廃番":c.status==="new"?"新色":"カラーチャート掲示中"}</div></div>
+    <div class="detail-cell"><div class="detail-label">ステータス</div><div class="detail-val" style="color:${statusColor}">${statusText}</div></div>
     <div class="detail-cell" style="grid-column:1/-1"><div class="detail-label">2度塗り</div><div class="detail-val" style="color:${doubleCoatColor}">${doubleCoat}${c.double ? "（硬化不良防止のため推奨）" : "（1度塗りで十分）"}</div></div>
     ${hint ? `<div class="detail-cell" style="grid-column:1/-1"><div class="detail-label">💡 こんな方に</div><div class="detail-val" style="color:var(--new);font-weight:500">${hint}</div></div>` : ''}`;
   const actions = document.getElementById("sh-actions");
