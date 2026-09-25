@@ -772,7 +772,11 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
           </div>
           <div class="form-field">
             <label class="form-label">廃番予定月（空欄＝即廃番）</label>
-            <input class="form-input" type="month" id="disc-sched">
+            <div style="display:flex;align-items:center;gap:4px">
+              <span onclick="openMonthPicker('disc-sched')" style="cursor:pointer;font-size:16px">📅</span>
+              <input class="form-input" type="month" id="disc-sched" oninput="updateDiscSchedMonthLabel()" style="flex:0 0 140px;width:140px">
+              <span id="disc-sched-month-label" style="font-size:13px;color:var(--text2);white-space:nowrap;min-width:70px">　</span>
+            </div>
           </div>
         </div>
         <div style="display:flex;gap:8px">
@@ -799,7 +803,8 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
           </div>
           <div class="form-field">
             <label class="form-label">新色予定月</label>
-            <div style="display:flex;align-items:center;gap:8px">
+            <div style="display:flex;align-items:center;gap:4px">
+              <span onclick="openMonthPicker('new-sched-month')" style="cursor:pointer;font-size:16px">📅</span>
               <input class="form-input" type="month" id="new-sched-month" oninput="updateNewSchedMonthLabel()" style="flex:0 0 140px;width:140px">
               <span id="new-sched-month-label" style="font-size:13px;color:var(--text2);white-space:nowrap;min-width:70px">　</span>
             </div>
@@ -1617,6 +1622,18 @@ function cancelSchedule(id) {
   showToast(`No.${c.n} の廃番予定を取り消しました`);
 }
 
+// カレンダーアイコンクリックで日付選択を開く(対応ブラウザはshowPicker、非対応はフォーカスでフォールバック)
+function openMonthPicker(id) {
+  const el = document.getElementById(id);
+  if (el.showPicker) { el.showPicker(); } else { el.focus(); el.click(); }
+}
+function updateDiscSchedMonthLabel() {
+  const val = document.getElementById("disc-sched").value;
+  const label = document.getElementById("disc-sched-month-label");
+  if (!val) { label.textContent = "　"; return; }
+  const [y, m] = val.split("-");
+  label.textContent = `${y}年${parseInt(m,10)}月`;
+}
 // ---- 新色予定 ----
 function updateNewSchedMonthLabel() {
   const val = document.getElementById("new-sched-month").value; // "2026-08" 形式
@@ -1734,6 +1751,7 @@ function markDisc() {
     save(); renderAll();
     document.getElementById("disc-num").value = "";
     document.getElementById("disc-sched").value = "";
+    updateDiscSchedMonthLabel();
     alert(`No.${num} の廃番予定を ${schedMonth} に登録しました`);
   } else {
     // 即廃番（今月を記録）
