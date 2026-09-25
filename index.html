@@ -776,7 +776,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
           </div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="submit-btn danger" onclick="markDisc()" style="flex:1">廃番にする／予定登録</button>
+          <button class="submit-btn danger" onclick="markDisc()" style="flex:1">廃盤予定として登録</button>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px">予定月を入れると「廃番予定」として登録。空欄なら今すぐ廃番</div>
       </div>
@@ -799,7 +799,10 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
           </div>
           <div class="form-field">
             <label class="form-label">新色予定月</label>
-            <input class="form-input" type="month" id="new-sched-month">
+            <div style="display:flex;align-items:center;gap:8px">
+              <input class="form-input" type="month" id="new-sched-month" oninput="updateNewSchedMonthLabel()" style="flex:1">
+              <span id="new-sched-month-label" style="font-size:13px;color:var(--text2);white-space:nowrap;min-width:70px">　</span>
+            </div>
           </div>
         </div>
         <div style="display:flex;gap:8px">
@@ -1615,6 +1618,13 @@ function cancelSchedule(id) {
 }
 
 // ---- 新色予定 ----
+function updateNewSchedMonthLabel() {
+  const val = document.getElementById("new-sched-month").value; // "2026-08" 形式
+  const label = document.getElementById("new-sched-month-label");
+  if (!val) { label.textContent = "　"; return; }
+  const [y, m] = val.split("-");
+  label.textContent = `${y}年${parseInt(m,10)}月`;
+}
 function markNewSchedule() {
   const num = document.getElementById("new-sched-num").value.trim();
   const month = document.getElementById("new-sched-month").value;
@@ -1627,6 +1637,7 @@ function markNewSchedule() {
   save(); renderAll();
   document.getElementById("new-sched-num").value = "";
   document.getElementById("new-sched-month").value = "";
+  updateNewSchedMonthLabel();
   alert(`No.${num} の新色予定を ${month} に登録しました`);
 }
 function renderNewSchedList() {
