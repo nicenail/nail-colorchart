@@ -116,6 +116,8 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 .color-card:active { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
 .color-card.is-disc { border-color: #F5C8C8; background: #FFFAFA; }
 .color-card.is-new { border-color: #B8E0CC; background: #F8FDF9; }
+.color-card.is-disc-soon { border-color: #F5C8C8; }
+.color-card.is-new-soon { border-color: #B8E0CC; }
 .nail-chip {
   width: 44px; height: 58px; flex-shrink: 0;
   border-radius: 48% 48% 42% 42% / 55% 55% 45% 45%;
@@ -141,6 +143,8 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 }
 .status-badge.disc { background: var(--disc); }
 .status-badge.new { background: var(--new); }
+.status-badge.disc-soon { background: #fff; color: var(--disc); border: 1.5px solid var(--disc); }
+.status-badge.new-soon { background: #fff; color: var(--new); border: 1.5px solid var(--new); }
 
 /* DETAIL SHEET */
 .sheet-bg {
@@ -784,6 +788,33 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
       <div class="mini-list" id="sched-list"></div>
     </div>
 
+    <!-- 新色予定登録 -->
+    <div class="section-title">新色予定の登録</div>
+    <div class="manage-card">
+      <div class="manage-card-body">
+        <div class="form-row">
+          <div class="form-field" style="flex:0 0 90px">
+            <label class="form-label">番号</label>
+            <input class="form-input" type="text" id="new-sched-num" placeholder="例: 143" inputmode="text">
+          </div>
+          <div class="form-field">
+            <label class="form-label">新色予定月</label>
+            <input class="form-input" type="month" id="new-sched-month">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="submit-btn" onclick="markNewSchedule()" style="flex:1">新色予定として登録</button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">既存のカラー番号に、今後「新色」として案内する予定月を登録します（一覧に「新色予定」バッジが出ます）</div>
+      </div>
+    </div>
+
+    <!-- 新色予定リスト -->
+    <div class="section-title">新色予定</div>
+    <div class="manage-card">
+      <div class="mini-list" id="new-sched-list"></div>
+    </div>
+
     <!-- 月別廃番フィルター -->
     <div class="section-title">廃番済み（月別）</div>
     <div class="manage-card">
@@ -1409,8 +1440,12 @@ function renderList() {
   if (!items.length) { el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">該当なし</div>`; return; }
   el.innerHTML = items.map(c => {
     const stars = "★".repeat(c.stars||2) + "☆".repeat(4-(c.stars||2));
-    const badge = c.status==="disc" ? `<span class="status-badge disc">廃番</span>` : c.status==="new" ? `<span class="status-badge new">新色</span>` : "";
-    const cardCls = c.status==="disc" ? " is-disc" : c.status==="new" ? " is-new" : "";
+    let badge = "";
+    let cardCls = "";
+    if (c.status==="disc") { badge = `<span class="status-badge disc">廃番</span>`; cardCls = " is-disc"; }
+    else if (c.status==="new") { badge = `<span class="status-badge new">新色</span>`; cardCls = " is-new"; }
+    else if (c.discSchedule) { badge = `<span class="status-badge disc-soon">廃番予定 ${c.discSchedule.replace('-','/')}</span>`; cardCls = " is-disc-soon"; }
+    else if (c.newSchedule) { badge = `<span class="status-badge new-soon">新色予定 ${c.newSchedule.replace('-','/')}</span>`; cardCls = " is-new-soon"; }
     const isHolo    = isHoloColor(c);
     const isGlitter = isGlitterColor(c);
     const isPearl   = isPearlColor(c);
@@ -1494,6 +1529,7 @@ function maybeClose(e) { if(e.target.id==="sheet-bg") closeSheet(); }
 function renderManageLists() {
   renderDiscByMonth();
   renderSchedList();
+  renderNewSchedList();
 
   // 月フィルターの選択肢を更新
   const months = [...new Set(data.filter(c=>c.discMonth).map(c=>c.discMonth))].sort().reverse();
@@ -1557,6 +1593,82 @@ function renderSchedList() {
       </div>
     </div>`;
   }).join("") : `<div class="empty-mini">廃番予定はありません</div>`;
+}
+// 廃番予定 → 実際に廃番にする
+function execSchedule(id) {
+  const c = data.find(x => x.id === id);
+  if (!c) return;
+  const now = new Date();
+  c.status = "disc";
+  c.discMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  c.discSchedule = null;
+  save(); renderAll();
+  showToast(`No.${c.n} を廃番にしました`);
+}
+// 廃番予定を取り消す
+function cancelSchedule(id) {
+  const c = data.find(x => x.id === id);
+  if (!c) return;
+  c.discSchedule = null;
+  save(); renderAll();
+  showToast(`No.${c.n} の廃番予定を取り消しました`);
+}
+
+// ---- 新色予定 ----
+function markNewSchedule() {
+  const num = document.getElementById("new-sched-num").value.trim();
+  const month = document.getElementById("new-sched-month").value;
+  if (!num) { alert("番号を入力してください"); return; }
+  if (!month) { alert("新色予定月を入力してください"); return; }
+  const c = data.find(x => x.n === num);
+  if (!c) { alert(`No.${num} が見つかりません`); return; }
+  if (c.status === "new") { alert(`No.${num} はすでに新色です`); return; }
+  c.newSchedule = month;
+  save(); renderAll();
+  document.getElementById("new-sched-num").value = "";
+  document.getElementById("new-sched-month").value = "";
+  alert(`No.${num} の新色予定を ${month} に登録しました`);
+}
+function renderNewSchedList() {
+  const items = data.filter(c => c.newSchedule);
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  const el = document.getElementById("new-sched-list");
+  if (!el) return;
+  el.innerHTML = items.length ? items.map(c => {
+    const isThisMonth = c.newSchedule && c.newSchedule.replace('-','/') === thisMonth;
+    const label = isThisMonth
+      ? `<span style="font-size:10px;font-weight:700;color:var(--new);background:var(--new-light);padding:2px 7px;border-radius:8px">今月新色</span>`
+      : `<span style="font-size:10px;color:var(--text3)">${c.newSchedule.replace('-','/')}</span>`;
+    return `<div class="mini-item">
+      <div class="mini-swatch" style="background:${c.c}"></div>
+      <div class="mini-info">
+        <div class="mini-num" style="display:flex;align-items:center;gap:6px">No.${c.n} ${label}</div>
+        <div class="mini-desc">${c.desc}</div>
+      </div>
+      <div class="mini-action" style="display:flex;flex-direction:column;gap:4px">
+        <button data-exec2="${c.id}" style="background:var(--new-light);color:var(--new);border-color:#a8dfc0">新色実行</button>
+        <button data-cancel2="${c.id}">取消</button>
+      </div>
+    </div>`;
+  }).join("") : `<div class="empty-mini">新色予定はありません</div>`;
+}
+// 新色予定 → 実際に新色にする
+function execNewSchedule(id) {
+  const c = data.find(x => x.id === id);
+  if (!c) return;
+  c.status = "new";
+  c.newSchedule = null;
+  save(); renderAll();
+  showToast(`No.${c.n} を新色にしました`);
+}
+// 新色予定を取り消す
+function cancelNewSchedule(id) {
+  const c = data.find(x => x.id === id);
+  if (!c) return;
+  c.newSchedule = null;
+  save(); renderAll();
+  showToast(`No.${c.n} の新色予定を取り消しました`);
 }
 function editSearch() {
   const num = document.getElementById("edit-search").value.trim();
@@ -2068,6 +2180,12 @@ function renderAll() {
   });
   document.querySelectorAll('[data-cancel]').forEach(btn => {
     btn.onclick = () => cancelSchedule(btn.dataset.cancel);
+  });
+  document.querySelectorAll('[data-exec2]').forEach(btn => {
+    btn.onclick = () => execNewSchedule(btn.dataset.exec2);
+  });
+  document.querySelectorAll('[data-cancel2]').forEach(btn => {
+    btn.onclick = () => cancelNewSchedule(btn.dataset.cancel2);
   });
   // ボタンテキストをJSでセット（Chrome翻訳対策）
   document.querySelectorAll('[data-restore]').forEach(btn => {
