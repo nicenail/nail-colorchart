@@ -701,7 +701,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
               <label class="form-label">素材</label>
               <select class="form-select" id="edit-tex">
                 <option>マット</option><option>シアー</option><option>パール</option>
-                <option>グリッター</option><option>シアー/グリッター</option>
+                <option>ジェルラメ</option><option>シアー/グリッター</option>
                 <option>パール/グリッター</option><option>マット/シアー</option>
                 <option>シアー/パール</option><option>グリッターラメ</option>
                 <option>フラッシュラメ</option>
@@ -856,7 +856,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
             <label class="form-label">素材</label>
             <select class="form-select" id="new-tex">
               <option>マット</option><option>シアー</option><option>パール</option>
-              <option>グリッター</option><option>シアー/グリッター</option>
+              <option>ジェルラメ</option><option>シアー/グリッター</option>
               <option>パール/グリッター</option><option>グリッターラメ</option>
               <option>フラッシュラメ</option>
             </select>
@@ -980,11 +980,11 @@ const DEFAULT_COLORS = [
   {id:"53",n:"53",c:"#1d1412",tex:"マット",desc:"マットなかなり暗めのダークブラウン（60秒硬化）",status:"active",stars:2,cure:"×",double:true,hint:"カラーチャートより実際に爪に塗るともう少し茶色みが出るよ！　フレンチに人気"},
   {id:"54",n:"54",c:"#4c2617",tex:"マット",desc:"マットなブラウン。赤味強め（60秒硬化）",status:"active",stars:2,cure:"×",double:true,hint:"チョコレートのようなカラーをご希望の方におすすめ！　ワンカラー・フレンチに人気"},
   {id:"55",n:"55",c:"#856657",tex:"シアー",desc:"シアーベージュ。日本人の肌になじむ、イエロー寄りのベージュ",status:"active",stars:1,cure:"◎",double:false,hint:"ナチュラルなブラウンベージュをご希望の方におすすめ！　グラデーションに人気"},
-  {id:"56",n:"56",c:"#937650",tex:"グリッター",desc:"シャンパンベージュ。強すぎないラメ",status:"active",stars:2,cure:"×",double:false,hint:"ベージュにシャンパンラメが入った大人なカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
+  {id:"56",n:"56",c:"#937650",tex:"ジェルラメ",desc:"シャンパンベージュ。強すぎないラメ",status:"active",stars:2,cure:"×",double:false,hint:"ベージュにシャンパンラメが入った大人なカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
   {id:"57",n:"57",c:"#875544",tex:"マット",desc:"ヌーディで美しいピーチベージュ。フレンチにもグラデにも使いやすい",status:"active",stars:2,cure:"△",double:true,hint:"マットなテラコッタカラーをご希望の方におすすめ！　グラデーションに人気"},
   {id:"58",n:"58",c:"#a96e5c",tex:"シアー",desc:"ちゅるんとしたオレンジピンク",status:"active",stars:1,cure:"◎",double:false,hint:"シアーなテラコッタカラーをご希望の方におすすめ！　クリアジェルで少し薄めると更にナチュラルになるよ！　グラデーションに人気"},
   {id:"60",n:"60",c:"#bb9071",tex:"シアー",desc:"ヌーディーなベージュ。シアーな質感",status:"active",stars:1,cure:"△",double:false,hint:"スキンカラーをご希望の方におすすめ！　クリアジェルで薄めると更にナチュラルに！　ワンカラー・グラデーションに人気"},
-  {id:"61",n:"61",c:"#c18b69",tex:"グリッター",desc:"ラメ入りベージュ。軽さがあります",status:"active",stars:2,cure:"△",double:false,hint:"No.60より少しオレンジみがあり細かいラメが入ったベージュ　クリアジェルで薄めるとよりナチュラルに！　グラデーションに人気"},
+  {id:"61",n:"61",c:"#c18b69",tex:"ジェルラメ",desc:"ラメ入りベージュ。軽さがあります",status:"active",stars:2,cure:"△",double:false,hint:"No.60より少しオレンジみがあり細かいラメが入ったベージュ　クリアジェルで薄めるとよりナチュラルに！　グラデーションに人気"},
   {id:"64",n:"64",c:"#bd9a8a",tex:"シアー/グリッター",desc:"まるで砂糖菓子を想像させる可愛らしいシアーラメのオレンジ",status:"active",stars:2,cure:"△",double:false,hint:"No.4と同じ質感のオレンジベージュ、自爪が透けるカラー　ワンカラー・グラデーションに人気"},
   {id:"65",n:"65",c:"#a18065",tex:"パール",desc:"微粒子パールの茶系ベージュ。肌なじみ◎",status:"active",stars:2,cure:"△",double:false,hint:"ブラウンベージュだけど、実際に自爪に乗せた方が光沢は出るが、肌なじみがいいカラー　ワンカラー・グラデーションに人気"},
   {id:"66",n:"66",c:"#ad8d75",tex:"マット",desc:"とても色味の淡い、マットなブラウンベージュ",status:"active",stars:2,cure:"△",double:false,hint:"No.60よりマットなベージュをご希望の方におすすめ！　自爪に乗せるとカラーチャートより白っぽく見えます　ワンカラー・グラデーションに人気"},
@@ -993,17 +993,17 @@ const DEFAULT_COLORS = [
   {id:"70",n:"70",c:"#b7b2a4",tex:"マット",desc:"マットなパステルグレー。白味が強いグレー",status:"active",stars:2,cure:"△",double:true,hint:"白を挑戦してみたいけど、汚れや黄ばみ、派手になりすぎるのが気になるのが心配な方におすすめ！　自爪に乗せた時の方が白く見えることが多いです。　ワンカラー・フレンチに人気"},
   {id:"71",n:"71",c:"#c4b7b2",tex:"パール",desc:"偏光パールの入ったホワイト。シアーな質感",status:"active",stars:2,cure:"△",double:false,hint:"ピンクベースの偏光パールで角度によってグリーンやブルーにも見えます　ワンカラー・グラデーションに人気"},
   {id:"74",n:"74",c:"#cac9c4",tex:"マット",desc:"ホワイト",status:"active",stars:2,cure:"△",double:true,hint:"定番のマットなホワイトと言ったらこれ！　ワンカラー・フレンチに人気(グラデーションにはNo.136がおすすめ！)"},
-  {id:"76",n:"76",c:"#bab9b7",tex:"グリッター",desc:"大粒のオーロララメがぎっしり入ったクリアベースのグリッター。過剰硬化で黄ばむため30秒以内",status:"active",stars:3,cure:"〇",double:false,hint:"自爪が確実に透けるのでアートに使うことが多いジェルです"},
+  {id:"76",n:"76",c:"#bab9b7",tex:"ジェルラメ",desc:"大粒のオーロララメがぎっしり入ったクリアベースのグリッター。過剰硬化で黄ばむため30秒以内",status:"active",stars:3,cure:"〇",double:false,hint:"自爪が確実に透けるのでアートに使うことが多いジェルです"},
   {id:"77",n:"77",c:"#a09f9a",tex:"シアー/グリッター",desc:"指先が華やかになるレインボー乱切りホロラメ（黄ばみやすいため硬化30秒以内）",status:"active",stars:3,cure:"△",double:false,hint:"自爪が確実に透けるので、アートに使うことが多いジェルです。"},
   {id:"78",n:"78",c:"#666e6d",tex:"シアー",desc:"レースの様に透け感がある青味の入ったブラックカラー",status:"active",stars:1,cure:"◎",double:false,hint:"自爪が確実に透けるのでカウンセリング・塗布時注意！　ワンカラーに人気"},
   {id:"79",n:"79",c:"#b49103",tex:"シアー",desc:"クリアカラーの山吹色。べっ甲のベースカラー",status:"active",stars:2,cure:"◎",double:false,hint:"べっこう飴のようなカラーをご希望の方におすすめ！　自爪が確実に透けるのでカウンセリング・塗布時注意！　ワンカラーに人気"},
-  {id:"81",n:"81",c:"#908167",tex:"グリッター",desc:"シルバーのグリッターカラー",status:"active",stars:3,cure:"×",double:false,hint:"L19より粒子が細かいラメをご希望の方におすすめ！(L19より黄みが出やすいです)　グラデーションに人気"},
-  {id:"82",n:"82",c:"#8c7640",tex:"グリッター",desc:"ゴールドのグリッターカラー",status:"active",stars:3,cure:"×",double:false,hint:"L18より粒子が細かいラメをご希望の方におすすめ！　グラデーションに人気"},
-  {id:"83",n:"83",c:"#7e5039",tex:"グリッター",desc:"ブロンズのグリッターカラー",status:"active",stars:3,cure:"×",double:false,hint:"L17より粒子の細かいラメをご希望の方におすすめ！　グラデーションに人気"},
-  {id:"84",n:"84",c:"#7e7e86",tex:"グリッター",desc:"ブルーとシルバーのMIXグリッター",status:"active",stars:3,cure:"×",double:false,hint:"Lラメに近い粒子のラメカラー　ワンカラー・グラデーションに人気"},
-  {id:"85",n:"85",c:"#88869a",tex:"グリッター",desc:"偏光ライトブルーパープルのグリッター",status:"active",stars:3,cure:"×",double:false,hint:"ブルーとパープルの間のラメカラーをご希望の方におすすめ！　グラデーションに人気"},
-  {id:"86",n:"86",c:"#bda49a",tex:"グリッター",desc:"偏光ピンクゴールドグリッター",status:"active",stars:3,cure:"×",double:false,hint:"春、グラデーションに人気"},
-  {id:"87",n:"87",c:"#b9b9b5",tex:"グリッター",desc:"クリアベースの白の微粒子ラメ",status:"active",stars:3,cure:"×",double:false,hint:"自爪が透けやすいカラーのためカウンセリング、塗布時注意！　ワンカラーに人気"},
+  {id:"81",n:"81",c:"#908167",tex:"ジェルラメ",desc:"シルバーのグリッターカラー",status:"active",stars:3,cure:"×",double:false,hint:"L19より粒子が細かいラメをご希望の方におすすめ！(L19より黄みが出やすいです)　グラデーションに人気"},
+  {id:"82",n:"82",c:"#8c7640",tex:"ジェルラメ",desc:"ゴールドのグリッターカラー",status:"active",stars:3,cure:"×",double:false,hint:"L18より粒子が細かいラメをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"83",n:"83",c:"#7e5039",tex:"ジェルラメ",desc:"ブロンズのグリッターカラー",status:"active",stars:3,cure:"×",double:false,hint:"L17より粒子の細かいラメをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"84",n:"84",c:"#7e7e86",tex:"ジェルラメ",desc:"ブルーとシルバーのMIXグリッター",status:"active",stars:3,cure:"×",double:false,hint:"Lラメに近い粒子のラメカラー　ワンカラー・グラデーションに人気"},
+  {id:"85",n:"85",c:"#88869a",tex:"ジェルラメ",desc:"偏光ライトブルーパープルのグリッター",status:"active",stars:3,cure:"×",double:false,hint:"ブルーとパープルの間のラメカラーをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"86",n:"86",c:"#bda49a",tex:"ジェルラメ",desc:"偏光ピンクゴールドグリッター",status:"active",stars:3,cure:"×",double:false,hint:"春、グラデーションに人気"},
+  {id:"87",n:"87",c:"#b9b9b5",tex:"ジェルラメ",desc:"クリアベースの白の微粒子ラメ",status:"active",stars:3,cure:"×",double:false,hint:"自爪が透けやすいカラーのためカウンセリング、塗布時注意！　ワンカラーに人気"},
   {id:"88",n:"88",c:"#a1c306",tex:"マット",desc:"明るい蛍光緑",status:"active",stars:2,cure:"〇",double:false,hint:"No.89との差がカラーチャートで分かりづらいので要注意！　夏、ワンカラーに人気"},
   {id:"89",n:"89",c:"#bace06",tex:"マット",desc:"蛍光のマットな黄色",status:"active",stars:2,cure:"〇",double:false,hint:"夏に人気　ネオンイエローをご希望の方におすすめ！　ワンカラーに人気"},
   {id:"90",n:"90",c:"#f04d2a",tex:"マット",desc:"蛍光マットなオレンジ",status:"active",stars:2,cure:"〇",double:false,hint:"夏に人気　ネオンオレンジをご希望のかたにおすすめ！　ワンカラーに人気"},
@@ -1018,7 +1018,7 @@ const DEFAULT_COLORS = [
   {id:"101",n:"101",c:"#83617b",tex:"マット",desc:"マットなグレーが強いラベンダーパープル",status:"active",stars:2,cure:"〇",double:false,hint:"ピンク寄りの紫をご希望の方におすすめ！　ワンカラー・フレンチに人気"},
   {id:"102",n:"102",c:"#615047",tex:"シアー",desc:"色っぽい指先をつくる曇り空のようなシアーグレージュ",status:"active",stars:1,cure:"△",double:true,hint:"ブラウンとグレーの間をご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
   {id:"103",n:"103",c:"#ad816a",tex:"シアー",desc:"素肌本来の美しさを追求できるナチュラルスキンベージュ",status:"active",stars:1,cure:"△",double:false,hint:"No.58とNo.60の間のカラーをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
-  {id:"104",n:"104",c:"#F0A0C0",tex:"グリッター",desc:"ざくざくのラメが沢山入った桜色のキラキラピンク",status:"disc",stars:2,cure:"△",double:false},
+  {id:"104",n:"104",c:"#F0A0C0",tex:"ジェルラメ",desc:"ざくざくのラメが沢山入った桜色のキラキラピンク",status:"disc",stars:2,cure:"△",double:false},
   {id:"105",n:"105",c:"#b3b5b9",tex:"パール",desc:"シアー系偏光パールのホワイト。ほんのりブルーがかって見えます",status:"active",stars:1,cure:"△",double:false,hint:"No.71と違いブルーがメインの偏光パールがあり夏に人気！　ワンカラーに人気"},
   {id:"106",n:"106",c:"#427093",tex:"シアー",desc:"透き通るようなクリアカラーのビビットライトブルー",status:"active",stars:2,cure:"〇",double:false,hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
   {id:"107",n:"107",c:"#6a3a3d",tex:"シアー",desc:"透け感のある、ダークボルドークリアカラー",status:"active",stars:1,cure:"×",double:true,hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
@@ -1044,8 +1044,8 @@ const DEFAULT_COLORS = [
   {id:"128",n:"128",c:"#511c22",tex:"マット",desc:"くすみ系の赤紫カラー",status:"active",stars:2,cure:"△",double:true,hint:"No.23にピンクを足したカラー　ワンカラー・フレンチに人気"},
   {id:"129",n:"129",c:"#9a6e6a",tex:"シアー/パール",desc:"細かいラメ入りのピンクベージュ、オフィスネイル向き",status:"active",stars:1,cure:"〇",double:false,hint:"ピンクにシャンパンベージュのラメが入ったカラー　ワンカラー・グラデーションに人気"},
   {id:"130",n:"130",c:"#94766d",tex:"シアー",desc:"くすみピンクのシアーカラー、オフィスネイル向き",status:"active",stars:1,cure:"〇",double:false,hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
-  {id:"131",n:"131",c:"#6b1d1e",tex:"グリッター",desc:"キラキラした大きめラメを使った目を引くラメカラーのレッド",status:"active",stars:2,cure:"△",double:false,hint:"明るめのレッドにザクザクとしたラメが入ったカラー　ワンカラー・グラデーションに人気"},
-  {id:"132",n:"132",c:"#947e56",tex:"グリッター",desc:"シャンパンゴールド（81と82の中間）",status:"active",stars:3,cure:"×",double:false,hint:"No.81とNo.82の間のラメカラー　ワンカラー・フレンチに人気"},
+  {id:"131",n:"131",c:"#6b1d1e",tex:"ジェルラメ",desc:"キラキラした大きめラメを使った目を引くラメカラーのレッド",status:"active",stars:2,cure:"△",double:false,hint:"明るめのレッドにザクザクとしたラメが入ったカラー　ワンカラー・グラデーションに人気"},
+  {id:"132",n:"132",c:"#947e56",tex:"ジェルラメ",desc:"シャンパンゴールド（81と82の中間）",status:"active",stars:3,cure:"×",double:false,hint:"No.81とNo.82の間のラメカラー　ワンカラー・フレンチに人気"},
   {id:"L17",n:"L17",c:"#D8C080",tex:"グリッターラメ",desc:"ゴールド系グリッター",status:"active",stars:3,cure:"△",double:false},
   {id:"L18",n:"L18",c:"#C8B060",tex:"グリッターラメ",desc:"ゴールドグリッター",status:"active",stars:3,cure:"△",double:false},
   {id:"L19",n:"L19",c:"#C8C890",tex:"グリッターラメ",desc:"シャンパングリッター",status:"active",stars:3,cure:"△",double:false},
@@ -1093,7 +1093,7 @@ const DEFAULT_COLORS = [
   {id:"137",n:"137",c:"#F5C5C0",tex:"シアー",desc:"新色・ピーチピンク",status:"new",stars:1,cure:"◎",double:false,hint:"No.126よりくすみがあるピンク　ワンカラー・グラデーションに人気"},
   {id:"138",n:"138",c:"#C8C0B8",tex:"マット",desc:"新色・グレージュ",status:"new",stars:2,cure:"〇",double:false,hint:"ホワイト寄りのグレーとパープルの間のカラー　ワンカラー・グラデーションに人気"},
   {id:"139",n:"139",c:"#303848",tex:"シアー",desc:"新色・透明感ブラック",status:"new",stars:1,cure:"〇",double:false,hint:"自爪が透けるカラーなので、カウンセリング・塗布時注意！　ワンカラーに人気"},
-  {id:"140",n:"140",c:"#a36d67",tex:"グリッター",desc:"夏っぽいピンクのラメカラー☆ 動くたびにキラキラと華やかに輝くラメが魅力のカラー",status:"new",stars:3,cure:"△",double:false,hint:"明るいピンクのラメカラーをご希望の方におすすめ！　グラデーションに人気"},
+  {id:"140",n:"140",c:"#a36d67",tex:"ジェルラメ",desc:"夏っぽいピンクのラメカラー☆ 動くたびにキラキラと華やかに輝くラメが魅力のカラー",status:"new",stars:3,cure:"△",double:false,hint:"明るいピンクのラメカラーをご希望の方におすすめ！　グラデーションに人気"},
   {id:"141",n:"141",c:"#c28550",tex:"マット",desc:"塗りやすくて、人気の馴染みの良い色!",status:"new",stars:2,cure:"〇",double:false,hint:"パステルオレンジをご希望の方におすすめ！　ワンカラー・グラデーションに人気"},
   {id:"142",n:"142",c:"#a4af83",tex:"マット",desc:"黄緑系のラインナップが少なかったため新色に登場! 今大人気の流行カラーで塗りやすく発色も綺麗なカラー",status:"new",stars:2,cure:"〇",double:false,hint:"ピスタチオのようなパステルグリーンをご希望の方におすすめ！　ワンカラーに人気"}
 ];
@@ -1485,7 +1485,7 @@ function renderList() {
       <div class="card-info">
         <div class="card-row1"><span class="card-num notranslate">No.${c.n}</span><span class="card-tex">${c.tex}</span></div>
         <div class="card-desc">${c.desc}</div>
-        <div class="card-stars">テクスチャー: ${stars} &nbsp;硬化不良: <span style="padding:1px 7px;border-radius:8px;font-weight:700;background:${cureLabel(c.cure).bg};color:${cureLabel(c.cure).color}">${cureLabel(c.cure).text}</span>${c.double ? ' &nbsp;<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:var(--new-light);color:var(--new);font-weight:700">2度塗り推奨</span>' : ' &nbsp;<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:var(--bg);color:var(--text3);font-weight:700;border:1px solid var(--border)">2度塗り+¥330</span>'}</div>
+        <div class="card-stars">テクスチャー: ${stars} &nbsp;硬化不良: <span style="padding:1px 7px;border-radius:8px;font-weight:700;background:${cureLabel(c.cure).bg};color:${cureLabel(c.cure).color}">${cureLabel(c.cure).text}</span>${(c.id.startsWith('L') || c.id.startsWith('FL')) ? '' : (c.double ? ' &nbsp;<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:var(--new-light);color:var(--new);font-weight:700">2度塗り推奨</span>' : ' &nbsp;<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:var(--bg);color:var(--text3);font-weight:700;border:1px solid var(--border)">2度塗り+¥330</span>')}</div>
       </div>${badge}</div>`;
   }).join("");
 }
@@ -1527,7 +1527,7 @@ function openSheet(id) {
     <div class="detail-cell"><div class="detail-label">素材</div><div class="detail-val">${c.tex}</div></div>
     <div class="detail-cell"><div class="detail-label">硬化不良リスク</div><div class="detail-val"><span style="padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;background:${cureLabel(c.cure).bg};color:${cureLabel(c.cure).color}">${cureLabel(c.cure).text}</span></div></div>
     <div class="detail-cell"><div class="detail-label">ステータス</div><div class="detail-val" style="color:${statusColor}">${statusText}</div></div>
-    <div class="detail-cell" style="grid-column:1/-1"><div class="detail-label">2度塗り</div><div class="detail-val" style="color:${doubleCoatColor}">${doubleCoat}${c.double ? "（硬化不良防止のため推奨）" : "（1度塗りで十分。ご希望の場合は2度塗り+¥330）"}</div></div>
+    ${(c.id.startsWith('L') || c.id.startsWith('FL')) ? '' : `<div class="detail-cell" style="grid-column:1/-1"><div class="detail-label">2度塗り</div><div class="detail-val" style="color:${doubleCoatColor}">${doubleCoat}${c.double ? "（硬化不良防止のため推奨）" : "（1度塗りで十分。ご希望の場合は2度塗り+¥330）"}</div></div>`}
     ${hint ? `<div class="detail-cell" style="grid-column:1/-1"><div class="detail-label">💡 こんな方に</div><div class="detail-val" style="color:var(--new);font-weight:500">${hint}</div></div>` : ''}`;
   const actions = document.getElementById("sh-actions");
   if (actions) {
